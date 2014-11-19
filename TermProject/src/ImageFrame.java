@@ -124,10 +124,10 @@ class ImageFrame extends JFrame
 				// turn off timer so we are sure that this frame gets drawn before
 				// the next timer event fires.
 				timer.stop();
+				//if (!myMap.WINNER)
 				
 				myMap.act();
 				//do action
-				
 				
 				// display the next frame
 				displayBufferedImage();

@@ -15,13 +15,16 @@ public class map {
 	Graphics2D g2d;
 	Random rand = new Random();
 	ArrayList<Actor> actors;
+	ArrayList<Home> homes;
 	int CELLSIZE;
+	boolean WINNER = false;
 
 	public map(int sizeIn, int CELLSIZE)//400 = 25x25, 800 = 50x50
 	{
 		this.CELLSIZE = CELLSIZE;
 		Random rand = new Random();
 		actors = new ArrayList<Actor>();
+		homes = new ArrayList<Home>();
 		size = sizeIn+1;
 		//make the map
 		BACKGROUND = new BufferedImage(size,size, BufferedImage.TYPE_INT_ARGB);
@@ -58,11 +61,15 @@ public class map {
 		mapObject = deepCopy(BACKGROUND);
 		g2d = (Graphics2D)mapObject.getGraphics();
 		g.dispose();
-		Actor testBunny = new Bunny(1,1);
-		Actor testBunny2 = new Bunny(7,5);
-		Actor testBunny3 = new Bunny(11,2);
-		Actor testBunny4 = new Bunny(24,24);
-		Actor testBunny5 = new Bunny(10,15);
+		//Actor testBunny = new Bunny(3,3);
+		//Actor testBunny2 = new Bunny(7,5);
+		//Actor testBunny3 = new Bunny(11,2);
+		//Actor testBunny4 = new Bunny(24,24);
+		//Actor testBunny5 = new Bunny(10,15);
+		Actor testHomeNW = new Home(0,0,4);
+		Actor testHomeNE = new Home(24,0,4);
+		Actor testHomeSW = new Home(0,24,4);
+		Actor testHomeSE = new Home(24,23,1);
 		for (int j = 7;j < 18; j+=2)
 		{
 			for (int i = 7; i < 18; i+=2)
@@ -71,12 +78,22 @@ public class map {
 				actors.add(testFoodTemp);
 			}
 		}
-		actors.add(testBunny);
-		actors.add(testBunny2);
-		actors.add(testBunny3);
-		actors.add(testBunny4);
-		actors.add(testBunny5);
-		
+		//actors.add(testBunny);
+		//actors.add(testBunny2);
+		//actors.add(testBunny3);
+		//actors.add(testBunny4);
+		//actors.add(testBunny5);
+		actors.add(testHomeNW);
+		homes.add((Home)testHomeNW);
+		actors.add(testHomeNE);
+		homes.add((Home)testHomeNE);
+		actors.add(testHomeSW);
+		homes.add((Home)testHomeSW);
+		actors.add(testHomeSE);
+		homes.add((Home)testHomeSE);
+		((Home)testHomeNW).active = false;
+		((Home)testHomeNE).active = false;
+		((Home)testHomeSW).active = false;
 		//Astar a= new Astar();
 		//a.pathfindBreadthFirst(new Point2D.Double(0,0), new Point2D.Double(2,4), this);
 		
@@ -105,7 +122,31 @@ public class map {
 			}
 		}
 		//System.out.println(actors.size());
-		
+		//CHECK FOR WIN CONDITION
+		if (!WINNER)
+		{
+			boolean winner = true;
+			for (Actor a : actors)
+			{
+				if (a.getTYPE() == actorTYPE.FOOD)
+				{
+					winner = false;
+				}
+			}
+			
+			if (winner)
+			{
+				int agg = 0;
+				//recall all bunnies from HOMES
+				for (Home h : homes)
+				{
+					h.recall();
+					agg += h.number_of_bunnies_spawned;
+				}
+				WINNER = true;
+				System.out.println("Number of bunnies used: " + agg);
+			}
+		}
 		render();
 	}
 	
@@ -148,5 +189,30 @@ public class map {
 		return false;
 	}
 	
+	public boolean occupied(int x, int y)
+	{
+		for (Actor a : actors)
+		{
+			if (a.getXY()[0] == x && a.getXY()[1] == y)
+			{
+				return true;
+			}
+		}
+		return false;
+		
+	}
+	
+	public boolean occupiedExclusion(int x, int y,Actor ex)
+	{
+		for (Actor a : actors)
+		{
+			if (a.getXY()[0] == x && a.getXY()[1] == y && a != ex)
+			{
+				return true;
+			}
+		}
+		return false;
+		
+	}
 	
 }

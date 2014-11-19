@@ -29,14 +29,17 @@ public class Bunny implements Actor {
 	//the current path
 	Stack<Point2D> path;
 	boolean pathing;
+	//the HOME you run away to (and came from)
+	Home home;
 	
-	public Bunny(int xIn, int yIn){
+	public Bunny(int xIn, int yIn, Home h){
 		//check if x,y are valid
 		x = xIn;
 		y = yIn;
 		currentState = state.CONFUSED;
 		path = null;
 		pathing = false;
+		home = h;
 	}
 	
 	
@@ -50,7 +53,7 @@ public class Bunny implements Actor {
 		{
 		case CONFUSED:
 			//LOOK FOR SOME FOOD TO STOP BEING CONFUSED
-			hunger = 3;
+			hunger = 20;//2 is min, 25 max, 5 is meh, 10 is GOOD, 20 is BOOM BOOM
 			//Point2D current = new Point2D.Double(x,y);
 			ArrayList<Point2D> points_to_check = new ArrayList<Point2D>();
 			for (int x = 0; x < 25; x++)
@@ -65,19 +68,22 @@ public class Bunny implements Actor {
 				}
 			}
 			//search actors
+			boolean found_path = false;
 			for (Actor a : Map.actors)
 			{
 				Point2D aPoint = new Point2D.Double(a.getXY()[0], a.getXY()[1]);
+				
 				for (Point2D p : points_to_check)
 				{
-					if (aPoint.equals(p) && a.getTYPE() == actorTYPE.FOOD)
+					if (aPoint.equals(p) && a.getTYPE() == actorTYPE.FOOD && !found_path)
 					{
 						Astar astar = new Astar();
 						//change 0,0 to the bunny home in future code
 						path = astar.pathfindBreadthFirst(new Point2D.Double(this.x,this.y), new Point2D.Double(aPoint.getX(),aPoint.getY()), Map);
 						pathing = true;
-						//System.out.println(path.toString());
+						System.out.println(path.toString());
 						currentState = state.SEEKING;
+						found_path = true;
 					}
 				}
 			}
@@ -143,7 +149,7 @@ public class Bunny implements Actor {
 			{
 				Astar a= new Astar();
 				//change 0,0 to the bunny home in future code
-				path = a.pathfindBreadthFirst(new Point2D.Double(x,y), new Point2D.Double(0,0), Map);
+				path = a.pathfindBreadthFirst(new Point2D.Double(x,y), new Point2D.Double(home.x,home.y), Map);
 				if (path != null)
 				{
 					pathing = true;

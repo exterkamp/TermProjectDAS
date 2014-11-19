@@ -49,9 +49,9 @@ public class Astar {
 	
 	public Stack<Point2D> pathfindBreadthFirst(Point2D start, Point2D end, map m)
 	{
-		boolean DEBUG = false;
+		boolean DEBUG = true;
 		if (DEBUG)
-		System.out.println(start.toString() + " -> " + end.toString());
+		System.out.println(start.toString() + " -> " + end.toString() + "*******************************************************************");
 		//right now breadth first
         //openset := {start}    // The set of tentative nodes to be evaluated, initially containing the start node
 		Queue<Point2D> frontier = new LinkedList<Point2D>();
@@ -73,8 +73,8 @@ public class Astar {
         	//current := the node in openset having the lowest f_score[] value
 			Point2D current = frontier.poll();
 			
-			if (DEBUG)
-				System.out.println(current.toString());
+			//if (DEBUG)
+				//System.out.println(current.toString());
         	//if current = goal
             	//return reconstruct_path(came_from, goal)
 			if (current.getX() == end.getX() && current.getY() == end.getY())	
@@ -105,6 +105,7 @@ public class Astar {
 		}
 		//return failure
 		System.out.println("FAILURE TO PATH");
+		System.exit(0);
 		return null;
 	}
 	
@@ -165,7 +166,7 @@ public class Astar {
 		//check for illegal points! (scan actor list and see if conflict)
 		for (Actor a : m.actors)
 		{
-			if (a.getTYPE() != actorTYPE.FOOD)
+			if (a.getTYPE() != actorTYPE.FOOD && a.getTYPE() != actorTYPE.HOME)//THINGS YOU CAN WALK OVER
 			{
 				int[] coor = a.getXY();
 				Point2D illegal = new Point2D.Double(coor[0], coor[1]);
