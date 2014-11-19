@@ -8,5 +8,5 @@ public interface Actor {
 	public boolean isDead();
 	public void render(Graphics2D g2d);
 	public int[] getXY();
-	public boolean isEdible();
+	public actorTYPE getTYPE();
 }

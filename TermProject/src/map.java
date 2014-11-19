@@ -16,7 +16,6 @@ public class map {
 	Random rand = new Random();
 	ArrayList<Actor> actors;
 	int CELLSIZE;
-	
 
 	public map(int sizeIn, int CELLSIZE)//400 = 25x25, 800 = 50x50
 	{
@@ -59,14 +58,14 @@ public class map {
 		mapObject = deepCopy(BACKGROUND);
 		g2d = (Graphics2D)mapObject.getGraphics();
 		g.dispose();
-		Actor testBunny = new Bunny(5,11);
+		Actor testBunny = new Bunny(1,1);
 		Actor testBunny2 = new Bunny(7,5);
 		Actor testBunny3 = new Bunny(11,2);
 		Actor testBunny4 = new Bunny(24,24);
 		Actor testBunny5 = new Bunny(10,15);
 		for (int j = 7;j < 18; j+=2)
 		{
-			for (int i = 7; i < 18; i++)
+			for (int i = 7; i < 18; i+=2)
 			{
 				Actor testFoodTemp = new Food(j,i);
 				actors.add(testFoodTemp);
@@ -129,6 +128,25 @@ public class map {
 		 return temp;
 	}
 	
+	public boolean addActor(int x, int y, actorTYPE a)
+	{
+		Actor act = null;
+		switch (a)
+		{
+		case FENCE:
+			act = new Fence(x,y);
+			break;
+		
+			
+		}
+		if (act != null)
+		{
+			actors.add(act);
+			render();
+			return true;
+		}
+		return false;
+	}
 	
 	
 }

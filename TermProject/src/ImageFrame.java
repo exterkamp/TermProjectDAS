@@ -79,9 +79,10 @@ class ImageFrame extends JFrame
 			public void mousePressed( MouseEvent event )
 			{
 				//set the point, if it is white to green
-			//	Point point = event.getPoint();
-			//	if ( isARGBColor( point, -1 ) )
-			//		drawSquare( point, Color.GREEN );
+				
+				//MAKING FENCE AT RUNTIME, FOR DEBUG
+				Point point = event.getPoint();
+				drawFence(point);
 			}
 		 
 			public void mouseClicked( MouseEvent event )
@@ -330,6 +331,19 @@ private void drawSquare( Point point, Color color )
 	g2d.setColor( color );
 	g2d.fillRect( x, y, 8, 8 );
 	displayBufferedImage();
+}
+
+private void drawFence(Point point)
+{
+	Graphics2D g2d = myMap.getMap().createGraphics();
+	//System.out.println(point.toString());
+	int x = (point.x / myMap.CELLSIZE);
+	int y = (point.y / myMap.CELLSIZE);
+	//g2d.setColor( Color.GRAY );
+	//g2d.fillRect( x, y, 24, 24 );
+	//displayBufferedImage();
+	if(myMap.addActor(x, y, actorTYPE.FENCE))
+		displayBufferedImage();
 }
 
 

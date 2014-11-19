@@ -18,12 +18,12 @@ public class Bunny implements Actor {
 	int x;
 	int y;
 	//behavior statistics
-	int fight;
-	int fligt;
-	int hunger;
-	int courage;
+	int fight;  //the more fight you have the more chance you will attack and distract the FOX
+	int fligt;  //the more flight you have the more chance you will run away to a HIDE or HOME
+	int hunger; //the more hunger you have the farther away you can see FOOD
+	int courage;//the more courage you have the more you will use DISTRACTIONS
 	//state enum
-	public enum state {CONFUSED,SEEKING,EATING,ESCAPING,FIGHTING,GOING_HOME};
+	public enum state {CONFUSED,SEEKING,EATING,ACTION,GOING_HOME};
 	//the current state
 	state currentState;
 	//the current path
@@ -49,6 +49,41 @@ public class Bunny implements Actor {
 		switch (currentState)
 		{
 		case CONFUSED:
+			//LOOK FOR SOME FOOD TO STOP BEING CONFUSED
+			hunger = 3;
+			//Point2D current = new Point2D.Double(x,y);
+			ArrayList<Point2D> points_to_check = new ArrayList<Point2D>();
+			for (int x = 0; x < 25; x++)
+			{
+				for (int y = 0; y < 25; y++)
+				{
+					//Point2D point = new Point2D.Double(x,y);
+					if (Point2D.distance(this.x, this.y, x, y) <= hunger)
+					{
+						points_to_check.add(new Point2D.Double(x,y));
+					}
+				}
+			}
+			//search actors
+			for (Actor a : Map.actors)
+			{
+				Point2D aPoint = new Point2D.Double(a.getXY()[0], a.getXY()[1]);
+				for (Point2D p : points_to_check)
+				{
+					if (aPoint.equals(p) && a.getTYPE() == actorTYPE.FOOD)
+					{
+						Astar astar = new Astar();
+						//change 0,0 to the bunny home in future code
+						path = astar.pathfindBreadthFirst(new Point2D.Double(this.x,this.y), new Point2D.Double(aPoint.getX(),aPoint.getY()), Map);
+						pathing = true;
+						//System.out.println(path.toString());
+						currentState = state.SEEKING;
+					}
+				}
+			}
+			
+			//MAKE SURE FOX ISN'T NEAR, THEN CONDUCT ACTION
+			
 			//System.out.println(x+","+y);
 			int deltX = rand.nextInt(3);
 			deltX -= 1;
@@ -66,9 +101,44 @@ public class Bunny implements Actor {
 			}
 			
 			break;
-			
+		case SEEKING:	
+			if(pathing)
+			{
+				
+				if (!path.isEmpty())
+				{
+					Point2D p = path.pop();
+					x = (int)p.getX();
+					y = (int)p.getY();
+					//System.out.println("seeking");
+				}
+				else
+				{
+					currentState = state.CONFUSED;
+					pathing = false;
+					path = null;
+					//System.out.println("seek over, going to confused");
+				}
+			}
+			else
+			{
+				currentState = state.CONFUSED;
+				path = null;
+				//System.out.println("no pathing, switch to confused");
+			}
+			break;
+		case EATING:
+			currentState = state.GOING_HOME;
+			//System.out.println("eating");
+			//reset all paths
+			pathing = false;
+			path = null;
+			//re-act since eating doesn't take the whole turn
+			act(Map,actors);
+			break;
 		case GOING_HOME:
 			//make path
+			//System.out.println("going home!");
 			if (!pathing && !(x == 0 && y == 0))//if not pathing and not home
 			{
 				Astar a= new Astar();
@@ -106,12 +176,15 @@ public class Bunny implements Actor {
 			if (this != a && x == coor[0] && y == coor[1])
 			{
 				//EAT PLANTS
-				if (a.isEdible())
+				if (a.getTYPE() == actorTYPE.FOOD)
 				{
-					//System.out.println("eating @ " + x + ". " + y);
-					full = true;
-					this.currentState = state.GOING_HOME;
-					a.die();
+					if (full == false)
+					{
+						//System.out.println("eating @ " + x + ". " + y);
+						full = true;
+						this.currentState = state.EATING;
+						a.die();
+					}
 				}
 				else
 				{
@@ -157,9 +230,9 @@ public class Bunny implements Actor {
 
 
 	@Override
-	public boolean isEdible() {
+	public actorTYPE getTYPE() {
 		// TODO Auto-generated method stub
-		return false;
+		return actorTYPE.BUNNY;
 	}
 
 }

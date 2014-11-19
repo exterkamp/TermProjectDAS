@@ -2,7 +2,6 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
-import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Stack;
 
@@ -42,11 +41,9 @@ class CoordinateComparator implements Comparator<Point2D.Float>
 
 public class Astar {
 	
-	ArrayList<Point2D> myHopesAndDreams;
 	
 	public Astar(){
 		//
-		myHopesAndDreams = new ArrayList<Point2D>();
 	}
 	
 	
@@ -92,8 +89,8 @@ public class Astar {
 				if (came_from[(int)(neighbor.getX() + neighbor.getY()*25)] != -2)
 				{
 					contains = true;
-					if (DEBUG)
-						System.out.println("contains duplicate");
+					//if (DEBUG)
+					//	System.out.println("contains duplicate");
 				}
 				
 				if (!contains)
@@ -107,7 +104,7 @@ public class Astar {
 			}
 		}
 		//return failure
-		System.out.println("FAILURE");
+		System.out.println("FAILURE TO PATH");
 		return null;
 	}
 	
@@ -168,15 +165,15 @@ public class Astar {
 		//check for illegal points! (scan actor list and see if conflict)
 		for (Actor a : m.actors)
 		{
-			//if (!a.isEdible())
-			//{
+			if (a.getTYPE() != actorTYPE.FOOD)
+			{
 				int[] coor = a.getXY();
 				Point2D illegal = new Point2D.Double(coor[0], coor[1]);
 				if (neighbors.remove(illegal))
 				{
 					//System.out.println("removed");
 				}
-			//}
+			}
 		}
 		//System.out.println("Neighbors: ");
 		//for (Point2D p : neighbors)
