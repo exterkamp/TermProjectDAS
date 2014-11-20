@@ -55,6 +55,7 @@ public class Bunny implements Actor {
 			//LOOK FOR SOME FOOD TO STOP BEING CONFUSED
 			hunger = 20;//2 is min, 25 max, 5 is meh, 10 is GOOD, 20 is BOOM BOOM
 			//Point2D current = new Point2D.Double(x,y);
+			//instead of looking through big circle, check incrementally big circles for closest one
 			ArrayList<Point2D> points_to_check = new ArrayList<Point2D>();
 			for (int x = 0; x < 25; x++)
 			{
@@ -81,7 +82,7 @@ public class Bunny implements Actor {
 						//change 0,0 to the bunny home in future code
 						path = astar.pathfindBreadthFirst(new Point2D.Double(this.x,this.y), new Point2D.Double(aPoint.getX(),aPoint.getY()), Map);
 						pathing = true;
-						System.out.println(path.toString());
+						//System.out.println(path.toString());
 						currentState = state.SEEKING;
 						found_path = true;
 					}

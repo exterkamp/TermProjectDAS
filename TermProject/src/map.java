@@ -1,6 +1,6 @@
 //import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.geom.Point2D;
+//import java.awt.geom.Point2D;
 import java.awt.image.*;
 import java.util.ArrayList;
 import java.util.Random;
@@ -69,7 +69,7 @@ public class map {
 		Actor testHomeNW = new Home(0,0,4);
 		Actor testHomeNE = new Home(24,0,4);
 		Actor testHomeSW = new Home(0,24,4);
-		Actor testHomeSE = new Home(24,23,1);
+		Actor testHomeSE = new Home(24,23,4);
 		for (int j = 7;j < 18; j+=2)
 		{
 			for (int i = 7; i < 18; i+=2)
@@ -91,9 +91,9 @@ public class map {
 		homes.add((Home)testHomeSW);
 		actors.add(testHomeSE);
 		homes.add((Home)testHomeSE);
-		((Home)testHomeNW).active = false;
-		((Home)testHomeNE).active = false;
-		((Home)testHomeSW).active = false;
+		//((Home)testHomeNW).active = false;
+		//((Home)testHomeNE).active = false;
+		//((Home)testHomeSW).active = false;
 		//Astar a= new Astar();
 		//a.pathfindBreadthFirst(new Point2D.Double(0,0), new Point2D.Double(2,4), this);
 		

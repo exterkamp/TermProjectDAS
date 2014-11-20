@@ -49,9 +49,9 @@ public class Astar {
 	
 	public Stack<Point2D> pathfindBreadthFirst(Point2D start, Point2D end, map m)
 	{
-		boolean DEBUG = true;
+		boolean DEBUG = false;
 		if (DEBUG)
-		System.out.println(start.toString() + " -> " + end.toString() + "*******************************************************************");
+		System.out.println(start.toString() + " -> " + end.toString());// + "*******************************************************************");
 		//right now breadth first
         //openset := {start}    // The set of tentative nodes to be evaluated, initially containing the start node
 		Queue<Point2D> frontier = new LinkedList<Point2D>();
@@ -105,7 +105,7 @@ public class Astar {
 		}
 		//return failure
 		System.out.println("FAILURE TO PATH");
-		System.exit(0);
+		//System.exit(0);
 		return null;
 	}
 	
@@ -122,7 +122,7 @@ public class Astar {
 		{
         	//current := came_from[current]
 			
-			int temp = came_from[(int)(current.getX() + current.getY()*25)];
+			int temp = came_from[(int)(current.getX() + current.getY()*25)];//624 is special case
 			int x = temp % 25;
 			int y = temp / 25;
 			//System.out.println(current.toString() + " came from " + new Point2D.Double(x,y).toString());
