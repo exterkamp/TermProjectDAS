@@ -116,7 +116,7 @@ public class Bunny implements Actor {
 			
 			break;
 		case SEEKING:	
-			if(pathing)
+			if(pathing && path != null)
 			{
 				
 				if (!path.isEmpty())

@@ -23,6 +23,9 @@ public class Fox implements Actor {
 	Actor target;
 	Astar stahr = new Astar();
 	
+	//STATS
+	int murders;
+	
 	public Fox(int x, int y) {
 		this.x = x;
 		this.y = y;
@@ -30,9 +33,10 @@ public class Fox implements Actor {
 		path = null;
 		pathing = false;
 		target = null;
+		murders = 0;
 	}
 	
-	
+	//LOOKING -> HUNTING -> GUARDING (if unsuccessful) -> REPEAT
 	@Override
 	public void act(map Map, ArrayList<Actor> actors) {
 		// TODO Auto-generated method stub
@@ -45,28 +49,60 @@ public class Fox implements Actor {
 			//System.out.println(a);
 			if (a == null)
 			{
-				int deltX = rand.nextInt(3);
-				deltX -= 1;
-				int deltY = rand.nextInt(3);
-				deltY -= 1;
-				x += deltX;
-				y += deltY;
-				if (x < 3 || x > 21)
+				//instead of pure random we want to TEND towards the middle until we get there and then TEND to be random
+				double distance = Point2D.distance(x, y, 12.5, 12.5);
+				//the larger the distance, the more likely we will move towards the middle
+				//the max distance is from 12.5,12.5 to 4,4 or 21,21
+				//max distance is = 12.0208
+				//min is 0
+				double percent_chance_of_random = distance / 12.0208;
+				if (rand.nextDouble() > percent_chance_of_random)
 				{
-					x = tempX;
+					//random walk, because close to middle
+					int deltX = rand.nextInt(3);
+					deltX -= 1;
+					int deltY = rand.nextInt(3);
+					deltY -= 1;
+					x += deltX;
+					y += deltY;
+					if (x < 3 || x > 21)
+					{
+						x = tempX;
+					}
+					if (y < 3 || y > 21)
+					{
+						y = tempY;
+					}
 				}
-				if (y < 3 || y > 21)
+				else
 				{
-					y = tempY;
+					//move towards the middle
+					if (x > 12.5)
+					{
+						x--;
+					}
+					else
+					{
+						x++;
+					}
+					if(y > 12.5)
+					{
+						y--;
+					}
+					else
+					{
+						y++;
+					}
+					
 				}
+				
 			}
 			else
 			{
 				//BUNNY FOUND!
 				target = a;
-				//path = stahr.pathfindBreadthFirst(new Point2D.Double(this.x,this.y), new Point2D.Double(a.getXY()[0],a.getXY()[1]), Map);
-				//pathing = true;
 				//System.out.println(target.toString());
+				//SET AN ATTENTION SPAN
 				currentState = state.HUNTING;
 			}
 			break;
@@ -85,17 +121,35 @@ public class Fox implements Actor {
 					}
 					Point2D p = path.pop();
 					//System.out.println("position " + x + " , "+ y);
-					x = (int)p.getX();
-					y = (int)p.getY();
+					if ((int)p.getX() > 3 && (int)p.getX() < 22 && (int)p.getY() > 3 && (int)p.getY() < 22)
+					{
+						x = (int)p.getX();
+						y = (int)p.getY();
+					}
+					else
+					{
+						//going back to "looking" causes flashing between HUNTING and LOOKING
+						currentState = state.LOOKING;
+						pathing = false;
+						path = null;
+						target = null;
+					}
+					
 					//System.out.println("new position " + x + " , "+ y);
 					//System.out.println("seeking");
 					//System.out.println(path.toString());
-					if (x == target.getXY()[0] && y == target.getXY()[1])
+					if (target != null)
 					{
-						//System.out.println("eating bunny hunted");
-						target.die();
-						target = null;
-						currentState = state.LOOKING;
+						if (x == target.getXY()[0] && y == target.getXY()[1])
+						{
+							//System.out.println("eating bunny hunted");
+							murders++;
+							target.die();
+							target = null;
+							currentState = state.LOOKING;
+							pathing = false;
+							path = null;
+						}
 					}
 				}
 				else
@@ -130,6 +184,7 @@ public class Fox implements Actor {
 				{
 					//System.out.println("eating bunny accident");
 					a.die();
+					murders++;
 					target = null;
 					currentState = state.LOOKING;
 					

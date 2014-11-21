@@ -76,10 +76,10 @@ public class map {
 		//Actor testBunny3 = new Bunny(11,2);
 		//Actor testBunny4 = new Bunny(24,24);
 		//Actor testBunny5 = new Bunny(10,15);
-		Actor testHomeNW = new Home(0,0,1);
-		Actor testHomeNE = new Home(24,0,1);
-		Actor testHomeSW = new Home(0,24,1);
-		Actor testHomeSE = new Home(24,24,1);
+		Actor testHomeNW = new Home(0,0,2);
+		Actor testHomeNE = new Home(24,0,2);
+		Actor testHomeSW = new Home(0,24,2);
+		Actor testHomeSE = new Home(24,24,2);
 		Actor testFox = new Fox(12,12);
 		for (int j = 7;j < 18; j+=2)
 		{
@@ -168,13 +168,21 @@ public class map {
 			{
 				int agg = 0;
 				//recall all bunnies from HOMES
-				for (Home h : homes)
+				for (Actor a : actors)
 				{
-					h.recall();
-					agg += h.number_of_bunnies_spawned;
+					if (a.getTYPE() == actorTYPE.HOME)
+					{
+						((Home)a).recall();
+						agg += ((Home)a).number_of_bunnies_spawned;
+					}
+					else if (a.getTYPE() == actorTYPE.FOX)
+					{
+						System.out.println("Number of bunnies lost: " + ((Fox)a).murders);
+					}
 				}
 				WINNER = true;
 				System.out.println("Number of bunnies used: " + agg);
+				
 			}
 		}
 		render();

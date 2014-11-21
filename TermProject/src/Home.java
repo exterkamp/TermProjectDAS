@@ -14,9 +14,12 @@ public class Home implements Actor {
 	int hunger; //the more hunger you have the farther away you can see FOOD
 	int courage;//the more courage you have the more you will use DISTRACTIONS
 	ArrayList<Bunny> children;
+	long spawn_time_in_ms;//System.currentTimeMillis()
+	long last_spawn_time_in_ms;
 	
 	//STATISTICS VARIABLES
 	int number_of_bunnies_spawned;
+	
 	
 	
 	public Home(int x, int y,int max)
@@ -27,6 +30,8 @@ public class Home implements Actor {
 		children = new ArrayList<Bunny>();
 		active = true;
 		number_of_bunnies_spawned = 0;
+		spawn_time_in_ms = 3000;
+		last_spawn_time_in_ms = 0;
 	}
 	
 	
@@ -47,12 +52,19 @@ public class Home implements Actor {
 			}
 		}
 		//SPAWN A BUNNY RANDOMLY OR WHATNOT
-		if(!Map.occupiedExclusion(x, y,this) && children.size() < max && active)
+		long now = System.currentTimeMillis();
+		if (children.size() == 0){}
+		
+		if (now - last_spawn_time_in_ms > spawn_time_in_ms)
 		{
-			int[] stats = Map.getStats();
-			Actor bunny = new Bunny(x,y,this,stats[0],stats[1],stats[2],stats[3]);
-			children.add((Bunny)bunny);
-			number_of_bunnies_spawned++;
+			if(!Map.occupiedExclusion(x, y,this) && children.size() < max && active)
+			{
+				int[] stats = Map.getStats();
+				Actor bunny = new Bunny(x,y,this,stats[0],stats[1],stats[2],stats[3]);
+				children.add((Bunny)bunny);
+				number_of_bunnies_spawned++;
+				last_spawn_time_in_ms = now;
+			}
 		}
 		
 		
