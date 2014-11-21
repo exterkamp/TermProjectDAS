@@ -3,6 +3,7 @@ import java.awt.Graphics2D;
 //import java.awt.geom.Point2D;
 import java.awt.image.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 
 //import javax.swing.text.html.HTMLDocument.Iterator;
@@ -18,8 +19,13 @@ public class map {
 	ArrayList<Home> homes;
 	int CELLSIZE;
 	boolean WINNER = false;
+	int fight;
+	int flight;
+	int hunger;
+	int courage;
+	
 
-	public map(int sizeIn, int CELLSIZE)//400 = 25x25, 800 = 50x50
+	public map(int sizeIn, int CELLSIZE, int[] stats)//400 = 25x25, 800 = 50x50
 	{
 		this.CELLSIZE = CELLSIZE;
 		Random rand = new Random();
@@ -30,7 +36,11 @@ public class map {
 		BACKGROUND = new BufferedImage(size,size, BufferedImage.TYPE_INT_ARGB);
 		//mapObject = new BufferedImage(size,size, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = (Graphics2D)BACKGROUND.getGraphics();
-		
+		//set stats
+		fight = stats[0];
+		flight = stats[1];
+		hunger = stats[2];
+		courage = stats[3];
 		//set as white
 		for (int i = 0; i <= size-1; i++)
 		{
@@ -66,10 +76,11 @@ public class map {
 		//Actor testBunny3 = new Bunny(11,2);
 		//Actor testBunny4 = new Bunny(24,24);
 		//Actor testBunny5 = new Bunny(10,15);
-		Actor testHomeNW = new Home(0,0,4);
-		Actor testHomeNE = new Home(24,0,4);
-		Actor testHomeSW = new Home(0,24,4);
-		Actor testHomeSE = new Home(24,23,4);
+		Actor testHomeNW = new Home(0,0,1);
+		Actor testHomeNE = new Home(24,0,1);
+		Actor testHomeSW = new Home(0,24,1);
+		Actor testHomeSE = new Home(24,24,1);
+		Actor testFox = new Fox(12,12);
 		for (int j = 7;j < 18; j+=2)
 		{
 			for (int i = 7; i < 18; i+=2)
@@ -83,6 +94,7 @@ public class map {
 		//actors.add(testBunny3);
 		//actors.add(testBunny4);
 		//actors.add(testBunny5);
+		
 		actors.add(testHomeNW);
 		homes.add((Home)testHomeNW);
 		actors.add(testHomeNE);
@@ -91,6 +103,8 @@ public class map {
 		homes.add((Home)testHomeSW);
 		actors.add(testHomeSE);
 		homes.add((Home)testHomeSE);
+		//always last!?
+		actors.add(testFox);
 		//((Home)testHomeNW).active = false;
 		//((Home)testHomeNE).active = false;
 		//((Home)testHomeSW).active = false;
@@ -120,6 +134,22 @@ public class map {
 			{
 				iterator.remove();
 			}
+			else if(a.getTYPE() == actorTYPE.HOME)
+			{
+				//scan through home's stuff
+				Home h = (Home)a;
+				for (final Iterator<Bunny> iteratorInner = h.children.iterator(); iteratorInner.hasNext(); )
+				{
+					Bunny b = iteratorInner.next();
+					if (b.isDead())
+					{
+						//removing dead bunny
+						iteratorInner.remove();
+					}
+				}
+				
+			}
+			
 		}
 		//System.out.println(actors.size());
 		//CHECK FOR WIN CONDITION
@@ -156,7 +186,7 @@ public class map {
 		
 		for (Actor a : actors)
 		{
-			a.render(g2d);
+			a.render(g2d, CELLSIZE);
 		}
 	}
 	
@@ -176,6 +206,8 @@ public class map {
 		{
 		case FENCE:
 			act = new Fence(x,y);
+			break;
+		default:
 			break;
 		
 			
@@ -197,6 +229,16 @@ public class map {
 			{
 				return true;
 			}
+			if (a.getTYPE() == actorTYPE.HOME)
+			{
+				for (Actor ayyLmao : ((Home)a).children)
+				{
+					if (ayyLmao.getXY()[0] == x && ayyLmao.getXY()[1] == y)
+					{
+						return true;
+					}
+				}
+			}
 		}
 		return false;
 		
@@ -214,5 +256,56 @@ public class map {
 		return false;
 		
 	}
+	
+	public Actor occupiedActorReturn(int x, int y)
+	{
+		for (Actor a : actors)
+		{
+			if (a.getXY()[0] == x && a.getXY()[1] == y)
+			{
+				return a;
+			}
+			if (a.getTYPE() == actorTYPE.HOME)
+			{
+				for (Actor ayyLmao : ((Home)a).children)
+				{
+					//System.out.println("looking at a bunny");
+					if (ayyLmao.getXY()[0] == x && ayyLmao.getXY()[1] == y)
+					{
+						//System.out.println("found an actor");
+						return ayyLmao;//can find actors
+					}
+				}
+			}
+		}
+		return null;
+		
+	}
+	public void changeStat(int num, int val)//1 = fight, 2 = flight, 3 = hunger, 4 = courage
+	{
+		switch (num)
+		{
+		case 1:
+			fight = val;
+			break;
+		case 2:
+			flight = val;
+			break;
+		case 3:
+			hunger = val;
+			break;
+		case 4:
+			courage = val;
+			break;
+			
+		}
+	}
+	
+	public int[] getStats()
+	{
+		int[] array = {fight,flight,hunger,courage};
+		return array;
+	}
+	
 	
 }

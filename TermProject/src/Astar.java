@@ -46,12 +46,52 @@ public class Astar {
 		//
 	}
 	
+	public Actor breadthFirstBubble(Point2D start, actorTYPE a, double range, map Map)
+	{
+		ArrayList<Point2D> visited = new ArrayList<Point2D>();
+		Queue<Point2D> frontier = new LinkedList<Point2D>();
+		frontier.add(start);
+		
+		while (!frontier.isEmpty())
+		{
+			Point2D current = frontier.poll();
+			visited.add(current);
+			//System.out.println(frontier.size());
+			
+			Actor ayy = Map.occupiedActorReturn((int)current.getX(), (int)current.getY());
+			if (ayy != null)	
+			{
+				//System.out.println(ayy.getTYPE());
+				if (ayy.getTYPE() == a)
+				{
+					//System.out.println("returning: " + ayy);
+					return ayy;
+				}
+			}
+			
+        	//for each neighbor in neighbor_nodes(current)
+			ArrayList<Point2D> validNeighbors = getNeighbors(current,Map);
+			
+			for (Point2D neighbor : validNeighbors)
+			{
+				if (Point2D.distance(start.getX(), start.getY(), neighbor.getX(), neighbor.getY()) <= range && !visited.contains(neighbor))
+				{
+					//System.out.println(Point2D.distance(start.getX(), start.getY(), neighbor.getX(), neighbor.getY()));
+					frontier.add(neighbor);			
+				}
+			}
+		}
+		//System.out.println("returning null");
+		return null;
+	}
+	
+	
 	
 	public Stack<Point2D> pathfindBreadthFirst(Point2D start, Point2D end, map m)
 	{
 		boolean DEBUG = false;
 		if (DEBUG)
-		System.out.println(start.toString() + " -> " + end.toString());// + "*******************************************************************");
+		System.out.println(start.toString() + " -> " + end.toString());
 		//right now breadth first
         //openset := {start}    // The set of tentative nodes to be evaluated, initially containing the start node
 		Queue<Point2D> frontier = new LinkedList<Point2D>();
@@ -60,7 +100,7 @@ public class Astar {
 		//came_from := the empty map     //The map of navigated nodes.
 		
 		int[] came_from = new int[625];
-		for (int i = 0; i < came_from.length-1;i++)
+		for (int i = 0; i < came_from.length;i++)
 		{
 			came_from[i] = -2;
 		}
@@ -97,14 +137,26 @@ public class Astar {
 				{
 					frontier.add(neighbor);
 					//came_from.add(new tuple(neighbor, current));
+					if (DEBUG)
+					if ((int)(neighbor.getX() + neighbor.getY()*25) == 624)
+					{
+						System.out.println("where it came from: " + current.getX() + current.getY());
+						System.out.println("index it came from: " + (int)(current.getX() + current.getY()*25));
+					}
 					came_from[(int)(neighbor.getX() + neighbor.getY()*25)] = (int)(current.getX() + current.getY()*25);
+					
+					
 					if (DEBUG)
 						System.out.println(neighbor.toString() + " came from " + current.toString());
 				}
 			}
 		}
 		//return failure
-		System.out.println("FAILURE TO PATH");
+		//System.out.println("FAILURE TO PATH");
+		//System.out.println(came_from[624]);
+		//System.out.println(came_from[623]);
+		//System.out.println(came_from[599]);
+		//System.out.println(came_from[598]);
 		//System.exit(0);
 		return null;
 	}
@@ -122,9 +174,11 @@ public class Astar {
 		{
         	//current := came_from[current]
 			
-			int temp = came_from[(int)(current.getX() + current.getY()*25)];//624 is special case
+			int temp = came_from[(int)(current.getX() + current.getY()*25)];
 			int x = temp % 25;
 			int y = temp / 25;
+			//if (temp == 624)
+			//System.out.println(temp + " : " + x + " , " + y);
 			//System.out.println(current.toString() + " came from " + new Point2D.Double(x,y).toString());
 			current = new Point2D.Double(x,y);
 			pathInv.add(current);
@@ -156,10 +210,13 @@ public class Astar {
 		{
 			for (double yY = point.getY()-1; yY <= point.getY()+1;yY++)
 			{
+				//if (xX == 24 && yY == 24)
 				//System.out.println("checking: " + xX + "," + yY);
 				if ((point.getX() != xX || point.getY() != yY) && xX >= 0 && xX < 25 && yY >= 0 && yY < 25)//and in bounds
 				{
 					neighbors.add(new Point2D.Double(xX,yY));
+					//if (xX == 24 && yY == 24)
+					//	System.out.println("adding: " + xX + "," + yY);
 				}
 			}
 		}

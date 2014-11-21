@@ -18,12 +18,16 @@ public class Bunny implements Actor {
 	int x;
 	int y;
 	//behavior statistics
+	//maybe rename resourcefulness
 	int fight;  //the more fight you have the more chance you will attack and distract the FOX
-	int fligt;  //the more flight you have the more chance you will run away to a HIDE or HOME
+	int flight;  //the more flight you have the more chance you will run away to a HIDE or HOME
 	int hunger; //the more hunger you have the farther away you can see FOOD
-	int courage;//the more courage you have the more you will use DISTRACTIONS
+	int courage;//the more courage you have the more you will use DISTRACTIONS and not be scared
+	double courage_confused_modifier;//more courage, less chance of being scared randomly
+	int scared_duration = 0;
+	
 	//state enum
-	public enum state {CONFUSED,SEEKING,EATING,ACTION,GOING_HOME};
+	public enum state {CONFUSED,SEEKING,EATING,ACTION,GOING_HOME,SCARED};
 	//the current state
 	state currentState;
 	//the current path
@@ -32,7 +36,7 @@ public class Bunny implements Actor {
 	//the HOME you run away to (and came from)
 	Home home;
 	
-	public Bunny(int xIn, int yIn, Home h){
+	public Bunny(int xIn, int yIn, Home h, int fight, int flight, int hunger, int courage){
 		//check if x,y are valid
 		x = xIn;
 		y = yIn;
@@ -40,6 +44,10 @@ public class Bunny implements Actor {
 		path = null;
 		pathing = false;
 		home = h;
+		this.fight = fight;
+		this.flight = flight;
+		this.hunger = hunger*2;//2-20 <- take #in a x2
+		courage_confused_modifier =  0.1 - (((double)courage) / 100.0);
 	}
 	
 	
@@ -53,9 +61,8 @@ public class Bunny implements Actor {
 		{
 		case CONFUSED:
 			//LOOK FOR SOME FOOD TO STOP BEING CONFUSED
-			hunger = 20;//2 is min, 25 max, 5 is meh, 10 is GOOD, 20 is BOOM BOOM
+			//hunger = 20;//2 is min, 25 max, 5 is meh, 10 is GOOD, 20 is BOOM BOOM
 			//Point2D current = new Point2D.Double(x,y);
-			//instead of looking through big circle, check incrementally big circles for closest one
 			ArrayList<Point2D> points_to_check = new ArrayList<Point2D>();
 			for (int x = 0; x < 25; x++)
 			{
@@ -114,10 +121,18 @@ public class Bunny implements Actor {
 				
 				if (!path.isEmpty())
 				{
-					Point2D p = path.pop();
-					x = (int)p.getX();
-					y = (int)p.getY();
-					//System.out.println("seeking");
+					if (rand.nextDouble() > courage_confused_modifier)
+					{
+						Point2D p = path.pop();
+						x = (int)p.getX();
+						y = (int)p.getY();
+						//System.out.println("seeking");
+					}
+					else
+					{
+						scared_duration = rand.nextInt(5);
+						currentState = state.SCARED;
+					}
 				}
 				else
 				{
@@ -132,6 +147,30 @@ public class Bunny implements Actor {
 				currentState = state.CONFUSED;
 				path = null;
 				//System.out.println("no pathing, switch to confused");
+			}
+			break;
+		case SCARED:
+			if(scared_duration > 0)
+			{
+				deltX = rand.nextInt(3);
+				deltX -= 1;
+				deltY = rand.nextInt(3);
+				deltY -= 1;
+				x += deltX;
+				y += deltY;
+				if (x < 0 || x > 24)
+				{
+					x = tempX;
+				}
+				if (y < 0 || y > 24)
+				{
+					y = tempY;
+				}
+				scared_duration--;
+			}
+			else
+			{
+				currentState = state.CONFUSED;
 			}
 			break;
 		case EATING:
@@ -193,6 +232,11 @@ public class Bunny implements Actor {
 						a.die();
 					}
 				}
+				/*if (a.getTYPE() == actorTYPE.FOX)
+				{
+					die();
+					System.out.println("Bunny eaten!");
+				}*/
 				else
 				{
 					//System.out.println("cancelling overlap");
@@ -219,12 +263,27 @@ public class Bunny implements Actor {
 	}
 
 	@Override
-	public void render(Graphics2D g2d) {
+	public void render(Graphics2D g2d,int CELLSIZE) {
 		// TODO Auto-generated method stub
-		g2d.setColor(Color.WHITE);
-		int xReal = x * 24;//CELLSIZE
-		int yReal = y * 24;//CELLSIZE
-		g2d.fillRect(xReal+1, yReal+1, 23, 23);
+		switch (currentState)
+		{
+		case SCARED:
+			g2d.setColor(new Color(0xFFeaab88));//light red
+			break;
+		case CONFUSED:
+			g2d.setColor(new Color(0xFFccf4ca));//light green
+			break;
+		case GOING_HOME:
+			g2d.setColor(new Color(0xFFdddddd));//light grey
+			break;
+		default:
+			g2d.setColor(Color.WHITE);
+			break;
+		}
+		
+		int xReal = x * CELLSIZE;//CELLSIZE
+		int yReal = y * CELLSIZE;//CELLSIZE
+		g2d.fillRect(xReal+1, yReal+1, CELLSIZE-1, CELLSIZE-1);
 	}
 
 

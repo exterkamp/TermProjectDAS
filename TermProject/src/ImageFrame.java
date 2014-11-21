@@ -1,8 +1,8 @@
 import java.awt.BorderLayout;
-import java.awt.Color;
+//import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Graphics2D;
+//import java.awt.Graphics2D;
 //import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -47,7 +47,7 @@ class ImageFrame extends JFrame
 	JPanel lowerPanel;
 	JPanel leftPanel;
 	int CELLSIZE;
-	
+	int stats[];
 	
 	
 	public ImageFrame(int choice)
@@ -63,13 +63,15 @@ class ImageFrame extends JFrame
 			CELLSIZE = 32;
 		}
 	    //set up the map
-		myMap = new map(size, CELLSIZE);
+		stats = new int[4];
+		myMap = new map(size, CELLSIZE,stats);
 		initializedMap = true;
 		Picframe = new JPanel();
 		Picframe.add(label = new JLabel(new ImageIcon(myMap.getMap())));
 		
 		//add the menu items and panels
 		addMenu();
+		
 		
 		//f.setSize(myMap.getMap().getWidth()+45,myMap.getMap().getHeight()+lowerPanel.getHeight()+80);
 		this.getContentPane().add( leftPanel, BorderLayout.WEST );
@@ -82,7 +84,21 @@ class ImageFrame extends JFrame
 				
 				//MAKING FENCE AT RUNTIME, FOR DEBUG
 				Point point = event.getPoint();
-				drawFence(point);
+				boolean actor_click = false;
+				int x = (point.x / myMap.CELLSIZE);
+				int y = (point.y / myMap.CELLSIZE);
+				for (Actor a : myMap.actors)
+				{
+					//search
+					if (a.getXY()[0] == x && a.getXY()[1] == y)
+					{
+						actor_click = true;
+						
+					}
+				}
+				if (!actor_click)
+					drawFence(x,y);
+					
 			}
 		 
 			public void mouseClicked( MouseEvent event )
@@ -178,7 +194,7 @@ private void addMenu()
 				CELLSIZE = 32;
 			}
 		    //get the preferred probability
-			myMap = new map(size,CELLSIZE);
+			myMap = new map(size,CELLSIZE,stats);
 			initializedMap = true;
 			displayBufferedImage();
 			//f.setSize(myMap.getMap().getWidth()+45,myMap.getMap().getHeight()+lowerPanel.getHeight()+80);
@@ -261,7 +277,10 @@ private void addMenu()
 	});
 	button.setPreferredSize(new Dimension(150,25)); 
 	
-	final JButton Fight = new JButton( "Fight = 0" );
+	final JLabel Fight = new JLabel( "Fight" );
+	final JLabel Flight = new JLabel( "Flight" );
+	final JLabel Hunger = new JLabel( "Hunger" );
+	final JLabel Courage = new JLabel( "Courage" );
 	
 	JSlider slider = new JSlider();
     slider.setMajorTickSpacing(1);
@@ -270,16 +289,67 @@ private void addMenu()
     slider.setPaintLabels(true);
     slider.setValue(0);
     ChangeListener changeListener = new ChangeListener() {
-      @SuppressWarnings("deprecation")
-	public void stateChanged(ChangeEvent changeEvent) {
+      public void stateChanged(ChangeEvent changeEvent) {
     	  JSlider theSlider = (JSlider) changeEvent.getSource();
           if (!theSlider.getValueIsAdjusting()) {
-            Fight.setLabel("Fight = " + new Integer(theSlider.getValue()));
+            Fight.setText("Fight = " + new Integer(theSlider.getValue()));
+            myMap.changeStat(1, new Integer(theSlider.getValue()));
+            stats[0] = new Integer(theSlider.getValue());
           }
       }
     };
     slider.addChangeListener(changeListener);
-	
+    JSlider slider2 = new JSlider();
+    slider2.setMajorTickSpacing(1);
+    slider2.setMaximum(10);
+    slider2.setPaintTicks(true);
+    slider2.setPaintLabels(true);
+    slider2.setValue(0);
+    ChangeListener changeListener2 = new ChangeListener() {
+      public void stateChanged(ChangeEvent changeEvent) {
+    	  JSlider theSlider = (JSlider) changeEvent.getSource();
+          if (!theSlider.getValueIsAdjusting()) {
+            Flight.setText("Flight = " + new Integer(theSlider.getValue()));
+            myMap.changeStat(2, new Integer(theSlider.getValue()));
+            stats[1] = new Integer(theSlider.getValue());
+          }
+      }
+    };
+    slider2.addChangeListener(changeListener2);
+    JSlider slider3 = new JSlider();
+    slider3.setMajorTickSpacing(1);
+    slider3.setMaximum(10);
+    slider3.setPaintTicks(true);
+    slider3.setPaintLabels(true);
+    slider3.setValue(0);
+    ChangeListener changeListener3 = new ChangeListener() {
+      public void stateChanged(ChangeEvent changeEvent) {
+    	  JSlider theSlider = (JSlider) changeEvent.getSource();
+          if (!theSlider.getValueIsAdjusting()) {
+            Hunger.setText("Hunger = " + new Integer(theSlider.getValue()));
+            myMap.changeStat(3, new Integer(theSlider.getValue()));
+            stats[2] = new Integer(theSlider.getValue());
+          }
+      }
+    };
+    slider3.addChangeListener(changeListener3);
+    JSlider slider4 = new JSlider();
+    slider4.setMajorTickSpacing(1);
+    slider4.setMaximum(10);
+    slider4.setPaintTicks(true);
+    slider4.setPaintLabels(true);
+    slider4.setValue(0);
+    ChangeListener changeListener4 = new ChangeListener() {
+      public void stateChanged(ChangeEvent changeEvent) {
+    	  JSlider theSlider = (JSlider) changeEvent.getSource();
+          if (!theSlider.getValueIsAdjusting()) {
+            Courage.setText("Courage = " + new Integer(theSlider.getValue()));
+            myMap.changeStat(4, new Integer(theSlider.getValue()));
+            stats[3] = new Integer(theSlider.getValue());
+          }
+      }
+    };
+    slider4.addChangeListener(changeListener4);
 	
 	JMenuBar menuBar = new JMenuBar();
 	menuBar.add(fileMenu);
@@ -288,8 +358,13 @@ private void addMenu()
 	leftPanel = new JPanel();
 	
 	leftPanel.add(slider);
-	
 	leftPanel.add(Fight);
+	leftPanel.add(slider2);
+	leftPanel.add(Flight);
+	leftPanel.add(slider3);
+	leftPanel.add(Hunger);
+	leftPanel.add(slider4);
+	leftPanel.add(Courage);
 	leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.PAGE_AXIS));
 	//leftPanel.setSize(new Dimension(50,100));
 	this.getContentPane().add( lowerPanel, BorderLayout.SOUTH );
@@ -322,7 +397,7 @@ private boolean isARGBColor( Point p, int argb )
 	return (myMap.getMap().getRGB( p.x, p.y ) == argb );
 }
 
-private void drawSquare( Point point, Color color )
+/*private void drawSquare( Point point, Color color )
 {
 	Graphics2D g2d = myMap.getMap().createGraphics();
 	int x = ((point.x >> 3) << 3);
@@ -331,17 +406,10 @@ private void drawSquare( Point point, Color color )
 	g2d.setColor( color );
 	g2d.fillRect( x, y, 8, 8 );
 	displayBufferedImage();
-}
+}*/
 
-private void drawFence(Point point)
+private void drawFence(int x, int y)
 {
-	Graphics2D g2d = myMap.getMap().createGraphics();
-	//System.out.println(point.toString());
-	int x = (point.x / myMap.CELLSIZE);
-	int y = (point.y / myMap.CELLSIZE);
-	//g2d.setColor( Color.GRAY );
-	//g2d.fillRect( x, y, 24, 24 );
-	//displayBufferedImage();
 	if(myMap.addActor(x, y, actorTYPE.FENCE))
 		displayBufferedImage();
 }

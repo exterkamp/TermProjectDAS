@@ -49,7 +49,8 @@ public class Home implements Actor {
 		//SPAWN A BUNNY RANDOMLY OR WHATNOT
 		if(!Map.occupiedExclusion(x, y,this) && children.size() < max && active)
 		{
-			Actor bunny = new Bunny(x,y,this);
+			int[] stats = Map.getStats();
+			Actor bunny = new Bunny(x,y,this,stats[0],stats[1],stats[2],stats[3]);
 			children.add((Bunny)bunny);
 			number_of_bunnies_spawned++;
 		}
@@ -71,19 +72,19 @@ public class Home implements Actor {
 	}
 
 	@Override
-	public void render(Graphics2D g2d) {
+	public void render(Graphics2D g2d,int CELLSIZE) {
 		// TODO Auto-generated method stub
 		for (Bunny b : children)
 		{
-			b.render(g2d);
+			b.render(g2d,CELLSIZE);
 		}
 		if (active)
 			g2d.setColor(Color.BLACK);          //black -> active home
 		else
 			g2d.setColor(new Color(0xFF651616));//not active, RED tinted black home
-		int xReal = x * 24;//CELLSIZE
-		int yReal = y * 24;//CELLSIZE
-		g2d.fillRect(xReal+1, yReal+1, 23, 23);
+		int xReal = x * CELLSIZE;//CELLSIZE
+		int yReal = y * CELLSIZE;//CELLSIZE
+		g2d.fillRect(xReal+1, yReal+1, CELLSIZE-1, CELLSIZE-1);
 		//System.out.println(children.toString());
 	}
 

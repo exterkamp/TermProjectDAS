@@ -33,12 +33,12 @@ public class Fence implements Actor {
 	}
 
 	@Override
-	public void render(Graphics2D g2d) {
+	public void render(Graphics2D g2d, int CELLSIZE) {
 		// TODO Auto-generated method stub
 		g2d.setColor(Color.GRAY);
-		int xReal = x * 24;//CELLSIZE
-		int yReal = y * 24;//CELLSIZE
-		g2d.fillRect(xReal+1, yReal+1, 23, 23);
+		int xReal = x * CELLSIZE;//CELLSIZE
+		int yReal = y * CELLSIZE;//CELLSIZE
+		g2d.fillRect(xReal+1, yReal+1, CELLSIZE-1, CELLSIZE-1);
 	}
 
 	@Override
