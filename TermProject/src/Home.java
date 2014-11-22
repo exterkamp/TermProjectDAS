@@ -57,11 +57,12 @@ public class Home implements Actor {
 		
 		if (now - last_spawn_time_in_ms > spawn_time_in_ms)
 		{
-			if(!Map.occupiedExclusion(x, y,this) && children.size() < max && active)
+			if(!Map.occupiedExclusion(x, y,actorTYPE.HOME) && children.size() < max && active)
 			{
 				int[] stats = Map.getStats();
 				Actor bunny = new Bunny(x,y,this,stats[0],stats[1],stats[2],stats[3]);
 				children.add((Bunny)bunny);
+				Map.nodes[x][y].children.add(bunny);//add new
 				number_of_bunnies_spawned++;
 				last_spawn_time_in_ms = now;
 			}

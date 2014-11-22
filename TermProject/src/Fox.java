@@ -77,6 +77,9 @@ public class Fox implements Actor {
 				else
 				{
 					//move towards the middle
+					//move towards the average of all the food location
+					//path if behind a wall?
+					//path to the average location/middle if probability is too high
 					if (x > 12.5)
 					{
 						x--;
@@ -101,7 +104,7 @@ public class Fox implements Actor {
 			{
 				//BUNNY FOUND!
 				target = a;
-				//System.out.println(target.toString());
+				//System.out.println("begin hunting " + target.toString());
 				//SET AN ATTENTION SPAN
 				currentState = state.HUNTING;
 			}
@@ -111,7 +114,8 @@ public class Fox implements Actor {
 			{
 				path = stahr.pathfindBreadthFirst(new Point2D.Double(this.x,this.y), new Point2D.Double(target.getXY()[0],target.getXY()[1]), Map);
 				pathing = true;
-				if (!path.isEmpty())
+				
+				if (path != null && !path.isEmpty())
 				{
 					if (path.size() > 1)
 					{
@@ -197,6 +201,12 @@ public class Fox implements Actor {
 				}
 						
 			}
+		}
+		//adjust place in map nodes
+		if (tempX != x || tempY != y)//if moved
+		{
+			Map.nodes[tempX][tempY].children.remove(this);//remove old
+			Map.nodes[x][y].children.add(this);//add new
 		}
 	}
 

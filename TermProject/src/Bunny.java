@@ -246,7 +246,13 @@ public class Bunny implements Actor {
 				
 			}
 		}
-		
+		//adjust place in map nodes
+		if (tempX != x || tempY != y)//if moved
+		{
+			Map.nodes[tempX][tempY].children.remove(this);//remove old
+			Map.nodes[x][y].children.add(this);//add new
+		}
+		//System.out.println(Map.nodes[x][y].children.get(Map.nodes[x][y].children.indexOf(this)).getTYPE() + "@ point" + x + " , " + y);
 		
 	}
 

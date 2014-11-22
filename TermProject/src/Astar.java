@@ -1,6 +1,7 @@
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Stack;
@@ -58,19 +59,19 @@ public class Astar {
 			visited.add(current);
 			//System.out.println(frontier.size());
 			
-			Actor ayy = Map.occupiedActorReturn((int)current.getX(), (int)current.getY());
+			Actor ayy = Map.occupiedActorReturn((int)current.getX(), (int)current.getY(),a);
 			if (ayy != null)	
 			{
 				//System.out.println(ayy.getTYPE());
-				if (ayy.getTYPE() == a)
-				{
+				//if (ayy.getTYPE() == a)
+				//{
 					//System.out.println("returning: " + ayy);
 					return ayy;
-				}
+				//}
 			}
 			
         	//for each neighbor in neighbor_nodes(current)
-			ArrayList<Point2D> validNeighbors = getNeighbors(current,Map);
+			ArrayList<Point2D> validNeighbors = getNeighborsExclusion(current,Map, a);
 			
 			for (Point2D neighbor : validNeighbors)
 			{
@@ -113,15 +114,15 @@ public class Astar {
         	//current := the node in openset having the lowest f_score[] value
 			Point2D current = frontier.poll();
 			
-			//if (DEBUG)
-				//System.out.println(current.toString());
+			if (DEBUG)
+			System.out.println(current.toString());
         	//if current = goal
             	//return reconstruct_path(came_from, goal)
 			if (current.getX() == end.getX() && current.getY() == end.getY())	
 				return reconstructPath(came_from,start,end);
 			
         	//for each neighbor in neighbor_nodes(current)
-			ArrayList<Point2D> validNeighbors = getNeighbors(current,m);
+			ArrayList<Point2D> validNeighbors = getNeighborsExclusion(current,m,actorTYPE.BUNNY);
 			for (Point2D neighbor : validNeighbors)
 			{
 				boolean contains = false;
@@ -221,7 +222,7 @@ public class Astar {
 			}
 		}
 		//check for illegal points! (scan actor list and see if conflict)
-		for (Actor a : m.actors)
+		/*for (Actor a : m.actors)
 		{
 			if (a.getTYPE() != actorTYPE.FOOD && a.getTYPE() != actorTYPE.HOME)//THINGS YOU CAN WALK OVER
 			{
@@ -232,13 +233,54 @@ public class Astar {
 					//System.out.println("removed");
 				}
 			}
+		}*/
+		
+		for (final Iterator<Point2D> iterator = neighbors.iterator(); iterator.hasNext(); )
+		{
+			Point2D p = iterator.next();
+			if (m.occupiedExclusion((int)p.getX(), (int)p.getY(), actorTYPE.FOOD) && m.occupiedExclusion((int)p.getX(), (int)p.getY(), actorTYPE.HOME))
+			{
+				//remove
+				//System.out.println("removing: " +(int)p.getX() + (int)p.getY());
+				iterator.remove();
+			}
 		}
+		
 		//System.out.println("Neighbors: ");
 		//for (Point2D p : neighbors)
 		//{
 		//	System.out.print(p.toString());
 		//	System.out.println(" and ");
 		//}
+		return neighbors;
+	}
+	
+	public ArrayList<Point2D> getNeighborsExclusion(Point2D point, map m,actorTYPE a)
+	{
+		ArrayList<Point2D> neighbors = new ArrayList<Point2D>();
+		for (double xX = point.getX()-1; xX <= point.getX()+1;xX++)
+		{
+			for (double yY = point.getY()-1; yY <= point.getY()+1;yY++)
+			{
+				//if (xX == 24 && yY == 24)
+				//System.out.println("checking: " + xX + "," + yY);
+				if ((point.getX() != xX || point.getY() != yY) && xX >= 0 && xX < 25 && yY >= 0 && yY < 25)//and in bounds
+				{
+					neighbors.add(new Point2D.Double(xX,yY));
+					//if (xX == 24 && yY == 24)
+					//	System.out.println("adding: " + xX + "," + yY);
+				}
+			}
+		}
+		for (final Iterator<Point2D> iterator = neighbors.iterator(); iterator.hasNext(); )
+		{
+			Point2D p = iterator.next();
+			if (m.occupiedExclusion((int)p.getX(), (int)p.getY(), actorTYPE.FOOD) && m.occupiedExclusion((int)p.getX(), (int)p.getY(), actorTYPE.HOME) && m.occupiedExclusion((int)p.getX(), (int)p.getY(), a))
+			{
+				//remove
+				iterator.remove();
+			}
+		}
 		return neighbors;
 	}
 	

@@ -16,13 +16,17 @@ public class map {
 	Graphics2D g2d;
 	Random rand = new Random();
 	ArrayList<Actor> actors;
-	ArrayList<Home> homes;
+	//ArrayList<Home> homes;
 	int CELLSIZE;
 	boolean WINNER = false;
 	int fight;
 	int flight;
 	int hunger;
 	int courage;
+	//the map object in node form
+	mapNode[][] nodes;
+	
+	
 	
 
 	public map(int sizeIn, int CELLSIZE, int[] stats)//400 = 25x25, 800 = 50x50
@@ -30,7 +34,15 @@ public class map {
 		this.CELLSIZE = CELLSIZE;
 		Random rand = new Random();
 		actors = new ArrayList<Actor>();
-		homes = new ArrayList<Home>();
+		nodes = new mapNode[25][25];
+		for (int row = 0;row < 25;row++)
+		{
+			for (int col = 0;col < 25;col++)
+			{
+				nodes[row][col] = new mapNode(row,col);
+			}
+		}
+		//homes = new ArrayList<Home>();
 		size = sizeIn+1;
 		//make the map
 		BACKGROUND = new BufferedImage(size,size, BufferedImage.TYPE_INT_ARGB);
@@ -71,11 +83,7 @@ public class map {
 		mapObject = deepCopy(BACKGROUND);
 		g2d = (Graphics2D)mapObject.getGraphics();
 		g.dispose();
-		//Actor testBunny = new Bunny(3,3);
-		//Actor testBunny2 = new Bunny(7,5);
-		//Actor testBunny3 = new Bunny(11,2);
-		//Actor testBunny4 = new Bunny(24,24);
-		//Actor testBunny5 = new Bunny(10,15);
+
 		Actor testHomeNW = new Home(0,0,2);
 		Actor testHomeNE = new Home(24,0,2);
 		Actor testHomeSW = new Home(0,24,2);
@@ -87,24 +95,26 @@ public class map {
 			{
 				Actor testFoodTemp = new Food(j,i);
 				actors.add(testFoodTemp);
+				nodes[j][i].children.add(testFoodTemp);
 			}
 		}
-		//actors.add(testBunny);
-		//actors.add(testBunny2);
-		//actors.add(testBunny3);
-		//actors.add(testBunny4);
-		//actors.add(testBunny5);
-		
 		actors.add(testHomeNW);
-		homes.add((Home)testHomeNW);
+		nodes[testHomeNW.getXY()[0]][testHomeNW.getXY()[1]].children.add(testHomeNW);
+		//homes.add((Home)testHomeNW);
 		actors.add(testHomeNE);
-		homes.add((Home)testHomeNE);
+		nodes[testHomeNW.getXY()[0]][testHomeNW.getXY()[1]].children.add(testHomeNE);
+		//homes.add((Home)testHomeNE);
 		actors.add(testHomeSW);
-		homes.add((Home)testHomeSW);
+		nodes[testHomeNW.getXY()[0]][testHomeNW.getXY()[1]].children.add(testHomeSW);
+		//homes.add((Home)testHomeSW);
 		actors.add(testHomeSE);
-		homes.add((Home)testHomeSE);
+		nodes[testHomeNW.getXY()[0]][testHomeNW.getXY()[1]].children.add(testHomeSE);
+		//homes.add((Home)testHomeSE);
 		//always last!?
 		actors.add(testFox);
+		nodes[testFox.getXY()[0]][testFox.getXY()[1]].children.add(testFox);
+		
+		
 		//((Home)testHomeNW).active = false;
 		//((Home)testHomeNE).active = false;
 		//((Home)testHomeSW).active = false;
@@ -132,6 +142,7 @@ public class map {
 			Actor a = iterator.next();
 			if (a.isDead())
 			{
+				nodes[a.getXY()[0]][a.getXY()[1]].children.remove(a);
 				iterator.remove();
 			}
 			else if(a.getTYPE() == actorTYPE.HOME)
@@ -144,6 +155,7 @@ public class map {
 					if (b.isDead())
 					{
 						//removing dead bunny
+						nodes[b.getXY()[0]][b.getXY()[1]].children.remove(b);
 						iteratorInner.remove();
 					}
 				}
@@ -223,6 +235,7 @@ public class map {
 		if (act != null)
 		{
 			actors.add(act);
+			nodes[act.getXY()[0]][act.getXY()[1]].children.add(act);
 			render();
 			return true;
 		}
@@ -231,7 +244,9 @@ public class map {
 	
 	public boolean occupied(int x, int y)
 	{
-		for (Actor a : actors)
+		
+		
+		/*for (Actor a : actors)
 		{
 			if (a.getXY()[0] == x && a.getXY()[1] == y)
 			{
@@ -247,27 +262,45 @@ public class map {
 					}
 				}
 			}
-		}
-		return false;
+		}*/
+		return !nodes[x][y].children.isEmpty();
 		
 	}
 	
-	public boolean occupiedExclusion(int x, int y,Actor ex)
+	public boolean occupiedExclusion(int x, int y,actorTYPE ex)
 	{
-		for (Actor a : actors)
-		{
-			if (a.getXY()[0] == x && a.getXY()[1] == y && a != ex)
+		//for (Actor a : actors)
+		//{
+			//if (a.getXY()[0] == x && a.getXY()[1] == y && a != ex)
+			if (!nodes[x][y].children.isEmpty())
 			{
-				return true;
+				for (Actor a : nodes[x][y].children)
+				{
+					if (a.getTYPE() != ex)
+						return true;
+				}
 			}
-		}
+		//}
 		return false;
 		
 	}
 	
-	public Actor occupiedActorReturn(int x, int y)
+	public Actor occupiedActorReturn(int x, int y, actorTYPE ex)
 	{
-		for (Actor a : actors)
+		//System.out.println("checking occupied actor return for: " + x + " , " + y);
+		if(!nodes[x][y].children.isEmpty())
+		{
+			int i = 0;
+			for (Actor a : nodes[x][y].children)
+			{
+				//System.out.println(a.getTYPE() + " " +i);
+				if (a.getTYPE() == ex)
+					return a;
+			}
+			//return nodes[x][y].children.get(0);
+		}
+		
+		/*for (Actor a : actors)
 		{
 			if (a.getXY()[0] == x && a.getXY()[1] == y)
 			{
@@ -277,7 +310,6 @@ public class map {
 			{
 				for (Actor ayyLmao : ((Home)a).children)
 				{
-					//System.out.println("looking at a bunny");
 					if (ayyLmao.getXY()[0] == x && ayyLmao.getXY()[1] == y)
 					{
 						//System.out.println("found an actor");
@@ -285,7 +317,7 @@ public class map {
 					}
 				}
 			}
-		}
+		}*/
 		return null;
 		
 	}
