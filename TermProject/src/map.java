@@ -19,10 +19,13 @@ public class map {
 	//ArrayList<Home> homes;
 	int CELLSIZE;
 	boolean WINNER = false;
+	int overlay; //0 is no overlay, 1 is path overlay
+	
 	int fight;
 	int flight;
 	int hunger;
 	int courage;
+	int plant_avg_x, plant_avg_y;
 	//the map object in node form
 	mapNode[][] nodes;
 	
@@ -31,10 +34,13 @@ public class map {
 
 	public map(int sizeIn, int CELLSIZE, int[] stats)//400 = 25x25, 800 = 50x50
 	{
+		overlay = 0;
 		this.CELLSIZE = CELLSIZE;
 		Random rand = new Random();
 		actors = new ArrayList<Actor>();
 		nodes = new mapNode[25][25];
+		plant_avg_x = 12;
+		plant_avg_y = 12;
 		for (int row = 0;row < 25;row++)
 		{
 			for (int col = 0;col < 25;col++)
@@ -84,10 +90,10 @@ public class map {
 		g2d = (Graphics2D)mapObject.getGraphics();
 		g.dispose();
 
-		Actor testHomeNW = new Home(0,0,2);
-		Actor testHomeNE = new Home(24,0,2);
-		Actor testHomeSW = new Home(0,24,2);
-		Actor testHomeSE = new Home(24,24,2);
+		Actor testHomeNW = new Home(0,0,1);
+		Actor testHomeNE = new Home(24,0,1);
+		Actor testHomeSW = new Home(0,24,1);
+		Actor testHomeSE = new Home(24,24,1);
 		Actor testFox = new Fox(12,12);
 		for (int j = 7;j < 18; j+=2)
 		{
@@ -132,6 +138,7 @@ public class map {
 	
 	public void act()
 	{
+		calculateAveragePlantLocation();
 		for (Actor a : actors)
 		{
 			a.act(this, actors);
@@ -290,7 +297,7 @@ public class map {
 		//System.out.println("checking occupied actor return for: " + x + " , " + y);
 		if(!nodes[x][y].children.isEmpty())
 		{
-			int i = 0;
+			//int i = 0;
 			for (Actor a : nodes[x][y].children)
 			{
 				//System.out.println(a.getTYPE() + " " +i);
@@ -346,6 +353,34 @@ public class map {
 		int[] array = {fight,flight,hunger,courage};
 		return array;
 	}
+	
+	public void setOverlay(int i)
+	{
+		overlay = i;
+	}
+	
+	public void calculateAveragePlantLocation()
+	{
+		double avgX = 0;
+		double avgY = 0;
+		double count = 0;
+		for (Actor a : actors)
+		{
+			if (a.getTYPE() == actorTYPE.FOOD)
+			{
+				avgX += a.getXY()[0];
+				avgY += a.getXY()[1];
+				count++;
+			}
+		}
+		avgX /= count;
+		avgY /= count;
+		plant_avg_x = (int) avgX;
+		plant_avg_y = (int) avgY;
+		//System.out.println("Average plant location: " + "(" + plant_avg_x + " , " + plant_avg_y + ")");
+	}
+	
+	
 	
 	
 }

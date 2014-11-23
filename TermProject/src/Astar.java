@@ -153,7 +153,7 @@ public class Astar {
 			}
 		}
 		//return failure
-		//System.out.println("FAILURE TO PATH");
+		System.out.println("FAILURE TO PATH");
 		//System.out.println(came_from[624]);
 		//System.out.println(came_from[623]);
 		//System.out.println(came_from[599]);

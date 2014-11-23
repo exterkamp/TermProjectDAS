@@ -168,6 +168,7 @@ class ImageFrame extends JFrame
 private void addMenu()
 {
 	JMenu fileMenu = new JMenu("File");
+	JMenu overlayMenu = new JMenu("Overlays");
 	
 	JMenuItem make = new JMenuItem("Make simulation Field");
 	final ImageFrame f = this;
@@ -253,6 +254,26 @@ private void addMenu()
 		}
 	});
 	fileMenu.add(exitItem);
+	JMenuItem overlayItem = new JMenuItem("No Overlay");
+	overlayItem.addActionListener(new ActionListener()
+	{
+		public void actionPerformed(ActionEvent event)
+		{
+			myMap.setOverlay(0);
+		}
+	});
+	overlayMenu.add(overlayItem);
+	JMenuItem overlayItem1 = new JMenuItem("Path Overlay");
+	overlayItem1.addActionListener(new ActionListener()
+	{
+		public void actionPerformed(ActionEvent event)
+		{
+			myMap.setOverlay(1);
+		}
+	});
+	overlayMenu.add(overlayItem1);
+	
+	
 	
 	final JButton button = new JButton( "Start" );
 	 button.addActionListener( new ActionListener()
@@ -353,6 +374,7 @@ private void addMenu()
 	
 	JMenuBar menuBar = new JMenuBar();
 	menuBar.add(fileMenu);
+	menuBar.add(overlayMenu);
 	lowerPanel = new JPanel();
 	lowerPanel.add(button);
 	leftPanel = new JPanel();

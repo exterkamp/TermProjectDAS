@@ -10,6 +10,7 @@ public class Bunny implements Actor {
 	
 	//VARS
 	Random rand = new Random();
+	Astar stahr = new Astar();
 	//whether or not the bunny is dead or alive
 	boolean dead = false;
 	//if the bunny is full (has eaten a plant) or not
@@ -35,6 +36,9 @@ public class Bunny implements Actor {
 	boolean pathing;
 	//the HOME you run away to (and came from)
 	Home home;
+	//overlay boolean
+	int overlay;
+	
 	
 	public Bunny(int xIn, int yIn, Home h, int fight, int flight, int hunger, int courage){
 		//check if x,y are valid
@@ -48,12 +52,15 @@ public class Bunny implements Actor {
 		this.flight = flight;
 		this.hunger = hunger*2;//2-20 <- take #in a x2
 		courage_confused_modifier =  0.1 - (((double)courage) / 100.0);
+		overlay = 0;
 	}
 	
 	
 	@Override
 	public void act(map Map, ArrayList<Actor> actors) {
 		// TODO Auto-generated method stub
+		overlay = Map.overlay;
+		//System.out.println(overlay + " <- rabbits, map -> " + Map.overlay);
 		
 		int tempX = x, tempY = y;
 		//MOVING
@@ -61,6 +68,8 @@ public class Bunny implements Actor {
 		{
 		case CONFUSED:
 			//LOOK FOR SOME FOOD TO STOP BEING CONFUSED
+			pathing = false;
+			path = null;
 			//hunger = 20;//2 is min, 25 max, 5 is meh, 10 is GOOD, 20 is BOOM BOOM
 			//Point2D current = new Point2D.Double(x,y);
 			ArrayList<Point2D> points_to_check = new ArrayList<Point2D>();
@@ -96,22 +105,57 @@ public class Bunny implements Actor {
 				}
 			}
 			
-			//MAKE SURE FOX ISN'T NEAR, THEN CONDUCT ACTION
+
 			
+			double distance = Point2D.distance(x, y, Map.plant_avg_x, Map.plant_avg_y);
+			//the larger the distance, the more likely we will move towards the middle
+			//the max distance is from 12.5,12.5 to 4,4 or 21,21
+			//max distance is = 12.0208
+			//min is 0
+			double percent_chance_of_random = distance / 30.0;
 			//System.out.println(x+","+y);
 			int deltX = rand.nextInt(3);
 			deltX -= 1;
 			int deltY = rand.nextInt(3);
 			deltY -= 1;
-			x += deltX;
-			y += deltY;
-			if (x < 0 || x > 24)
+			//instead of random, tend toward the average location of the plants!
+			if (rand.nextDouble() > percent_chance_of_random)
 			{
-				x = tempX;
+				
+				x += deltX;
+				y += deltY;
+				if (x < 0 || x > 24)
+				{
+					x = tempX;
+				}
+				if (y < 0 || y > 24)
+				{
+					y = tempY;
+				}
 			}
-			if (y < 0 || y > 24)
+			else
 			{
-				y = tempY;
+				//move towards the middle
+				//move towards the average of all the food location
+				//path if behind a wall?
+				//path to the average location/middle if probability is too high
+				if (x > Map.plant_avg_x)
+				{
+					x--;
+				}
+				else
+				{
+					x++;
+				}
+				if(y > Map.plant_avg_y)
+				{
+					y--;
+				}
+				else
+				{
+					y++;
+				}
+				
 			}
 			
 			break;
@@ -150,6 +194,12 @@ public class Bunny implements Actor {
 			}
 			break;
 		case SCARED:
+			//if scared_target != null
+				//run away from it
+			pathing = false;
+			path = null;
+			
+			//scared_target == null
 			if(scared_duration > 0)
 			{
 				deltX = rand.nextInt(3);
@@ -182,14 +232,14 @@ public class Bunny implements Actor {
 			//re-act since eating doesn't take the whole turn
 			act(Map,actors);
 			break;
-		case GOING_HOME:
+		case GOING_HOME://does not know to go home after getting scared by the fox
 			//make path
 			//System.out.println("going home!");
 			if (!pathing && !(x == 0 && y == 0))//if not pathing and not home
 			{
-				Astar a= new Astar();
+				//Astar a= new Astar();
 				//change 0,0 to the bunny home in future code
-				path = a.pathfindBreadthFirst(new Point2D.Double(x,y), new Point2D.Double(home.x,home.y), Map);
+				path = stahr.pathfindBreadthFirst(new Point2D.Double(x,y), new Point2D.Double(home.x,home.y), Map);
 				if (path != null)
 				{
 					pathing = true;
@@ -245,7 +295,28 @@ public class Bunny implements Actor {
 				}
 				
 			}
+			//MAKE SURE FOX ISN'T NEAR
+			//THIS NEEDS WORK!
+			if (a.getTYPE() == actorTYPE.FOX && currentState != state.SCARED)
+			{
+				double some_arbitrary_number = 4.0;
+				double dist = Point2D.distance(x, y, a.getXY()[0], a.getXY()[1]);
+				if (dist < some_arbitrary_number)
+				{
+					scared_duration = rand.nextInt(5);
+					currentState = state.SCARED;
+					pathing = false;
+					path = null;
+					//act(Map,actors);
+				}
+			}
+			
 		}
+		
+
+		
+		
+		
 		//adjust place in map nodes
 		if (tempX != x || tempY != y)//if moved
 		{
@@ -290,6 +361,33 @@ public class Bunny implements Actor {
 		int xReal = x * CELLSIZE;//CELLSIZE
 		int yReal = y * CELLSIZE;//CELLSIZE
 		g2d.fillRect(xReal+1, yReal+1, CELLSIZE-1, CELLSIZE-1);
+		
+		//RENDER PATH
+		
+		if (path != null && path.size() > 0 && overlay == 1)
+		{
+			Color[] cols = new Color[path.size()];
+			int red = 0;
+			int inc = 255/(path.size());
+			for (int i = 0; i < cols.length; i++)
+			{
+				cols[i] = new Color(red,0,0);
+				red += inc;
+			}
+			inc = 0;
+			Point2D old = null;
+			for (Point2D p : path)
+			{
+				g2d.setColor(cols[inc]);//light grey
+				inc++;
+				g2d.fillRect(((int)p.getX() * CELLSIZE)+1+8, ((int)p.getY() * CELLSIZE)+1+8, CELLSIZE-1-15, CELLSIZE-1-15);
+				if (old != null)
+				g2d.drawLine(((int)old.getX() * CELLSIZE)+12, ((int)old.getY() * CELLSIZE)+12, ((int)p.getX() * CELLSIZE)+12, ((int)p.getY() * CELLSIZE)+12);
+				old = p;
+				
+			}
+		}
+		
 	}
 
 
