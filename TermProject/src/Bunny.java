@@ -9,39 +9,32 @@ import java.util.Stack;
 public class Bunny implements Actor {
 	
 	//VARS
-	Random rand = new Random();
-	Astar stahr = new Astar();
-	//whether or not the bunny is dead or alive
-	boolean dead = false;
-	//if the bunny is full (has eaten a plant) or not
-	boolean full = false;
-	//coordinates
-	int x;
-	int y;
-	//behavior statistics
-	//maybe rename resourcefulness
-	int fight;  //the more fight you have the more chance you will attack and distract the FOX
-	int flight;  //the more flight you have the more chance you will run away to a HIDE or HOME
-	int hunger; //the more hunger you have the farther away you can see FOOD
-	int courage;//the more courage you have the more you will use DISTRACTIONS and not be scared
-	double courage_confused_modifier;//more courage, less chance of being scared randomly
-	int scared_duration = 0;
-	
-	//state enum
+	Random rand = new Random();         //the random object
+	Astar stahr = new Astar();			//the astar object
+	boolean dead = false;               //whether or not the bunny is dead or alive
+	boolean full = false;				//if the bunny is full (has eaten a plant) or not
+	int x;								//the x
+	int y;								//the y
+									//behavior statistics
+									//maybe rename resourcefulness
+	int fight; 						    //the more fight you have the more chance you will attack and distract the FOX
+	int flight;						    //the more flight you have the more chance you will run away to a HIDE or HOME
+	int hunger; 						//the more hunger you have the farther away you can see FOOD
+	int courage;						//the more courage you have the more you will use DISTRACTIONS and not be scared
+	double courage_confused_modifier;   //more courage, less chance of being scared randomly
+	int scared_duration = 0;            //int of how many turns you will be scared
+									//state enum
 	public enum state {CONFUSED,SEEKING,EATING,ACTION,GOING_HOME,SCARED};
-	//the current state
-	state currentState;
-	//the current path
-	Stack<Point2D> path;
-	boolean pathing;
-	//the HOME you run away to (and came from)
-	Home home;
-	//overlay boolean
-	int overlay;
+	state currentState;			     	//the current state
+	Stack<Point2D> path;				//the current path in a 2D stack
+	boolean pathing;					//bool flag if you are currently pathing (or supposed to)
+	Home home;							//the HOME you run away to (and came from)
+	int overlay;						//overlay boolean
 	
 	
 	public Bunny(int xIn, int yIn, Home h, int fight, int flight, int hunger, int courage){
-		//check if x,y are valid
+		//TODO - check if x,y are valid
+		//set all variables that need to be set
 		x = xIn;
 		y = yIn;
 		currentState = state.CONFUSED;
@@ -59,19 +52,32 @@ public class Bunny implements Actor {
 	@Override
 	public void act(map Map, ArrayList<Actor> actors) {
 		// TODO Auto-generated method stub
+		//update the overlay to be current
 		overlay = Map.overlay;
 		//System.out.println(overlay + " <- rabbits, map -> " + Map.overlay);
-		
+		//make some temporary ints of the current X,Y
 		int tempX = x, tempY = y;
 		//MOVING
 		switch (currentState)
 		{
 		case CONFUSED:
-			//LOOK FOR SOME FOOD TO STOP BEING CONFUSED
+			
 			pathing = false;
 			path = null;
+			//LOOK FOR SOME FOOD TO STOP BEING CONFUSED
 			//hunger = 20;//2 is min, 25 max, 5 is meh, 10 is GOOD, 20 is BOOM BOOM
 			//Point2D current = new Point2D.Double(x,y);
+			Actor food = stahr.breadthFirstBubble(new Point2D.Double(this.x,this.y), actorTYPE.FOOD, (double)hunger, Map);
+			if (food != null)
+			{
+				path = stahr.pathfindBreadthFirst(new Point2D.Double(this.x,this.y), new Point2D.Double(food.getXY()[0],food.getXY()[1]), Map);
+				pathing = true;
+				//System.out.println(path.toString());
+				currentState = state.SEEKING;
+			}
+			
+			
+			/*
 			ArrayList<Point2D> points_to_check = new ArrayList<Point2D>();
 			for (int x = 0; x < 25; x++)
 			{
@@ -104,7 +110,7 @@ public class Bunny implements Actor {
 					}
 				}
 			}
-			
+			*/
 
 			
 			double distance = Point2D.distance(x, y, Map.plant_avg_x, Map.plant_avg_y);
@@ -367,12 +373,14 @@ public class Bunny implements Actor {
 		if (path != null && path.size() > 0 && overlay == 1)
 		{
 			Color[] cols = new Color[path.size()];
-			int red = 0;
-			int inc = 255/(path.size());
-			for (int i = 0; i < cols.length; i++)
+			int red = 255;
+			int alpha = 255;
+			int inc = -1*(255/(path.size()));
+			for (int i = cols.length-1; i >= 0; i--)
 			{
-				cols[i] = new Color(red,0,0);
+				cols[i] = new Color(red,0,0,alpha);
 				red += inc;
+				alpha += inc;
 			}
 			inc = 0;
 			Point2D old = null;
@@ -380,7 +388,7 @@ public class Bunny implements Actor {
 			{
 				g2d.setColor(cols[inc]);//light grey
 				inc++;
-				g2d.fillRect(((int)p.getX() * CELLSIZE)+1+8, ((int)p.getY() * CELLSIZE)+1+8, CELLSIZE-1-15, CELLSIZE-1-15);
+				g2d.fillRect(((int)p.getX() * CELLSIZE)+1+9, ((int)p.getY() * CELLSIZE)+1+9, CELLSIZE-1-16, CELLSIZE-1-16);
 				if (old != null)
 				g2d.drawLine(((int)old.getX() * CELLSIZE)+12, ((int)old.getY() * CELLSIZE)+12, ((int)p.getX() * CELLSIZE)+12, ((int)p.getY() * CELLSIZE)+12);
 				old = p;

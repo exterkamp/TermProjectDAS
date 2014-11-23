@@ -52,11 +52,11 @@ public class Astar {
 		ArrayList<Point2D> visited = new ArrayList<Point2D>();
 		Queue<Point2D> frontier = new LinkedList<Point2D>();
 		frontier.add(start);
-		
+		visited.add(start);
 		while (!frontier.isEmpty())
 		{
 			Point2D current = frontier.poll();
-			visited.add(current);
+			//visited.add(current);
 			//System.out.println(frontier.size());
 			
 			Actor ayy = Map.occupiedActorReturn((int)current.getX(), (int)current.getY(),a);
@@ -75,10 +75,12 @@ public class Astar {
 			
 			for (Point2D neighbor : validNeighbors)
 			{
-				if (Point2D.distance(start.getX(), start.getY(), neighbor.getX(), neighbor.getY()) <= range && !visited.contains(neighbor))
+				boolean contains = visited.contains(neighbor);
+				if (Point2D.distance(start.getX(), start.getY(), neighbor.getX(), neighbor.getY()) <= range && !contains)
 				{
 					//System.out.println(Point2D.distance(start.getX(), start.getY(), neighbor.getX(), neighbor.getY()));
-					frontier.add(neighbor);			
+					frontier.add(neighbor);		
+					visited.add(neighbor);
 				}
 			}
 		}
@@ -278,6 +280,7 @@ public class Astar {
 			if (m.occupiedExclusion((int)p.getX(), (int)p.getY(), actorTYPE.FOOD) && m.occupiedExclusion((int)p.getX(), (int)p.getY(), actorTYPE.HOME) && m.occupiedExclusion((int)p.getX(), (int)p.getY(), a))
 			{
 				//remove
+				//System.out.println("removed " + p.toString());
 				iterator.remove();
 			}
 		}

@@ -1,46 +1,45 @@
-//import java.awt.Graphics;
 import java.awt.Graphics2D;
-//import java.awt.geom.Point2D;
 import java.awt.image.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 
-//import javax.swing.text.html.HTMLDocument.Iterator;
 
 public class map {
 	
-	int size;
-	BufferedImage mapObject = null;
-	BufferedImage BACKGROUND = null;
-	Graphics2D g2d;
-	Random rand = new Random();
-	ArrayList<Actor> actors;
-	//ArrayList<Home> homes;
-	int CELLSIZE;
-	boolean WINNER = false;
-	int overlay; //0 is no overlay, 1 is path overlay
 	
-	int fight;
-	int flight;
-	int hunger;
-	int courage;
-	int plant_avg_x, plant_avg_y;
-	//the map object in node form
-	mapNode[][] nodes;
+	int size;                        //size of the map in px
+	BufferedImage mapObject = null;  //the image of the map
+	BufferedImage BACKGROUND = null; //the grass background
+	Graphics2D g2d;                  //the image's g2d
+	Random rand = new Random();      //random number generator
+	ArrayList<Actor> actors;         //the actor list
+	int CELLSIZE;                    //the cell's size in px
+	boolean WINNER = false;          //winner boolean flag
+	int overlay;                     //0 is no overlay, 1 is path overlay
+	int fight;                       //amount of fight
+	int flight;                      //amount of flight
+	int hunger;        				 //amount of hunger 
+	int courage;					 //amount of courage
+	int plant_avg_x, plant_avg_y;    //the average location of the remaining plants
+	mapNode[][] nodes;               //the map object in node form
 	
 	
 	
 
 	public map(int sizeIn, int CELLSIZE, int[] stats)//400 = 25x25, 800 = 50x50
 	{
+		//set the overlay and size
 		overlay = 0;
 		this.CELLSIZE = CELLSIZE;
+		//initialize the lists and such
 		Random rand = new Random();
 		actors = new ArrayList<Actor>();
 		nodes = new mapNode[25][25];
+		//basic average of the plants to start
 		plant_avg_x = 12;
 		plant_avg_y = 12;
+		//initialize each node
 		for (int row = 0;row < 25;row++)
 		{
 			for (int col = 0;col < 25;col++)
@@ -48,18 +47,17 @@ public class map {
 				nodes[row][col] = new mapNode(row,col);
 			}
 		}
-		//homes = new ArrayList<Home>();
+		//make the image have a 1 px border so it looks consistent
 		size = sizeIn+1;
-		//make the map
+		//make the BACKGROUND and g2d for the BACKGROUND
 		BACKGROUND = new BufferedImage(size,size, BufferedImage.TYPE_INT_ARGB);
-		//mapObject = new BufferedImage(size,size, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = (Graphics2D)BACKGROUND.getGraphics();
 		//set stats
 		fight = stats[0];
 		flight = stats[1];
 		hunger = stats[2];
 		courage = stats[3];
-		//set as white
+		//set BACKGROUND as green
 		for (int i = 0; i <= size-1; i++)
 		{
 			for (int j = 0; j <= size-1; j++)
@@ -86,15 +84,20 @@ public class map {
 				BACKGROUND.setRGB(i,j,colorInt);
 			}
 		}	
+		//set the map and make the g2d for it
 		mapObject = deepCopy(BACKGROUND);
 		g2d = (Graphics2D)mapObject.getGraphics();
 		g.dispose();
 
-		Actor testHomeNW = new Home(0,0,1);
-		Actor testHomeNE = new Home(24,0,1);
-		Actor testHomeSW = new Home(0,24,1);
-		Actor testHomeSE = new Home(24,24,1);
+		//BASIC CODE FOR DEBUGGING
+		//make the rabbit holes
+		Actor testHomeNW = new Home(0,0,2);
+		Actor testHomeNE = new Home(24,0,2);
+		Actor testHomeSW = new Home(0,24,2);
+		Actor testHomeSE = new Home(24,24,2);
+		//make fox
 		Actor testFox = new Fox(12,12);
+		//make pattern of plants
 		for (int j = 7;j < 18; j+=2)
 		{
 			for (int i = 7; i < 18; i+=2)
@@ -104,29 +107,21 @@ public class map {
 				nodes[j][i].children.add(testFoodTemp);
 			}
 		}
+		//add homes and fox to actors list and the nodes
 		actors.add(testHomeNW);
 		nodes[testHomeNW.getXY()[0]][testHomeNW.getXY()[1]].children.add(testHomeNW);
-		//homes.add((Home)testHomeNW);
 		actors.add(testHomeNE);
 		nodes[testHomeNW.getXY()[0]][testHomeNW.getXY()[1]].children.add(testHomeNE);
-		//homes.add((Home)testHomeNE);
 		actors.add(testHomeSW);
 		nodes[testHomeNW.getXY()[0]][testHomeNW.getXY()[1]].children.add(testHomeSW);
-		//homes.add((Home)testHomeSW);
 		actors.add(testHomeSE);
 		nodes[testHomeNW.getXY()[0]][testHomeNW.getXY()[1]].children.add(testHomeSE);
-		//homes.add((Home)testHomeSE);
-		//always last!?
 		actors.add(testFox);
 		nodes[testFox.getXY()[0]][testFox.getXY()[1]].children.add(testFox);
-		
 		
 		//((Home)testHomeNW).active = false;
 		//((Home)testHomeNE).active = false;
 		//((Home)testHomeSW).active = false;
-		//Astar a= new Astar();
-		//a.pathfindBreadthFirst(new Point2D.Double(0,0), new Point2D.Double(2,4), this);
-		
 		render();
 	}
 	
@@ -138,20 +133,33 @@ public class map {
 	
 	public void act()
 	{
+		//get the real average plant location
 		calculateAveragePlantLocation();
+		//flag for seeing if we have won
+		boolean winner = true;
 		for (Actor a : actors)
 		{
+			//have all actors act
 			a.act(this, actors);
+			//if the actor is FOOD, we have not won, so set winner to false
+			if (a.getTYPE() == actorTYPE.FOOD)
+			{
+				//if there is any food then 
+				winner = false;
+			}
 		}
-		//remove dead actors
+		//REMOVE DEAD ACTORS
+		//iterate over all actors
 		for (final java.util.Iterator<Actor> iterator = actors.iterator(); iterator.hasNext(); )
 		{
 			Actor a = iterator.next();
+			//if it is dead remove it
 			if (a.isDead())
 			{
 				nodes[a.getXY()[0]][a.getXY()[1]].children.remove(a);
 				iterator.remove();
 			}
+			//if it is a HOME we need to recursivly check its children
 			else if(a.getTYPE() == actorTYPE.HOME)
 			{
 				//scan through home's stuff
@@ -170,47 +178,44 @@ public class map {
 			}
 			
 		}
-		//System.out.println(actors.size());
 		//CHECK FOR WIN CONDITION
 		if (!WINNER)
 		{
-			boolean winner = true;
-			for (Actor a : actors)
-			{
-				if (a.getTYPE() == actorTYPE.FOOD)
-				{
-					winner = false;
-				}
-			}
-			
-			if (winner)
+			if (winner)//if we have no FOOD actors (we checked earlier)
 			{
 				int agg = 0;
 				//recall all bunnies from HOMES
 				for (Actor a : actors)
 				{
+					//if it is a home
 					if (a.getTYPE() == actorTYPE.HOME)
 					{
+						//recall the children
 						((Home)a).recall();
+						//aggregate the number of bunnies they made
 						agg += ((Home)a).number_of_bunnies_spawned;
 					}
 					else if (a.getTYPE() == actorTYPE.FOX)
 					{
+						//if its a fox, see how many it murdered
 						System.out.println("Number of bunnies lost: " + ((Fox)a).murders);
 					}
 				}
+				//WINNER is true!
 				WINNER = true;
 				System.out.println("Number of bunnies used: " + agg);
 				
 			}
 		}
+		//render!
 		render();
 	}
 	
 	public void render()
 	{
+		//deepcopy the BACKGROUND
 		mapObject = deepCopy(BACKGROUND);
-		
+		//go through all the actors and render them
 		for (Actor a : actors)
 		{
 			a.render(g2d, CELLSIZE);
@@ -218,6 +223,7 @@ public class map {
 	}
 	
 	private BufferedImage deepCopy(BufferedImage bi) {
+		//DEEPCOPY based on the ColorModel of the BACKGROUND
 		 ColorModel cm = bi.getColorModel();
 		 boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
 		 WritableRaster raster = bi.copyData(null);
@@ -228,6 +234,7 @@ public class map {
 	
 	public boolean addActor(int x, int y, actorTYPE a)
 	{
+		//how to add an actor to the game a la fences during runtime
 		Actor act = null;
 		switch (a)
 		{
@@ -239,6 +246,7 @@ public class map {
 		
 			
 		}
+		//if we got a valid actor then add it to the list
 		if (act != null)
 		{
 			actors.add(act);
@@ -251,43 +259,23 @@ public class map {
 	
 	public boolean occupied(int x, int y)
 	{
-		
-		
-		/*for (Actor a : actors)
-		{
-			if (a.getXY()[0] == x && a.getXY()[1] == y)
-			{
-				return true;
-			}
-			if (a.getTYPE() == actorTYPE.HOME)
-			{
-				for (Actor ayyLmao : ((Home)a).children)
-				{
-					if (ayyLmao.getXY()[0] == x && ayyLmao.getXY()[1] == y)
-					{
-						return true;
-					}
-				}
-			}
-		}*/
+		//check the node at x,y if it has children
 		return !nodes[x][y].children.isEmpty();
 		
 	}
 	
 	public boolean occupiedExclusion(int x, int y,actorTYPE ex)
 	{
-		//for (Actor a : actors)
-		//{
-			//if (a.getXY()[0] == x && a.getXY()[1] == y && a != ex)
-			if (!nodes[x][y].children.isEmpty())
+		//if the node is not empty check it further
+		if (!nodes[x][y].children.isEmpty())
+		{
+			for (Actor a : nodes[x][y].children)
 			{
-				for (Actor a : nodes[x][y].children)
-				{
-					if (a.getTYPE() != ex)
-						return true;
-				}
+				//scan the actors in the node's children and if it anything other than the ex type, return true
+				if (a.getTYPE() != ex)
+					return true;
 			}
-		//}
+		}
 		return false;
 		
 	}
@@ -295,41 +283,26 @@ public class map {
 	public Actor occupiedActorReturn(int x, int y, actorTYPE ex)
 	{
 		//System.out.println("checking occupied actor return for: " + x + " , " + y);
+		//if there is an actor
 		if(!nodes[x][y].children.isEmpty())
 		{
 			//int i = 0;
+			//scan through its children
 			for (Actor a : nodes[x][y].children)
 			{
 				//System.out.println(a.getTYPE() + " " +i);
+				//if it is of type ex then return it
 				if (a.getTYPE() == ex)
 					return a;
 			}
 			//return nodes[x][y].children.get(0);
 		}
-		
-		/*for (Actor a : actors)
-		{
-			if (a.getXY()[0] == x && a.getXY()[1] == y)
-			{
-				return a;
-			}
-			if (a.getTYPE() == actorTYPE.HOME)
-			{
-				for (Actor ayyLmao : ((Home)a).children)
-				{
-					if (ayyLmao.getXY()[0] == x && ayyLmao.getXY()[1] == y)
-					{
-						//System.out.println("found an actor");
-						return ayyLmao;//can find actors
-					}
-				}
-			}
-		}*/
 		return null;
 		
 	}
 	public void changeStat(int num, int val)//1 = fight, 2 = flight, 3 = hunger, 4 = courage
 	{
+		//simple switch to change the state stats
 		switch (num)
 		{
 		case 1:
@@ -350,12 +323,14 @@ public class map {
 	
 	public int[] getStats()
 	{
+		//simple getter
 		int[] array = {fight,flight,hunger,courage};
 		return array;
 	}
 	
 	public void setOverlay(int i)
 	{
+		//setting the overlay
 		overlay = i;
 	}
 	
@@ -364,17 +339,22 @@ public class map {
 		double avgX = 0;
 		double avgY = 0;
 		double count = 0;
+		//scan all actors
 		for (Actor a : actors)
 		{
+			//if it is a plant then add it to the totals
 			if (a.getTYPE() == actorTYPE.FOOD)
 			{
+				//add its x's and y's tp the total
 				avgX += a.getXY()[0];
 				avgY += a.getXY()[1];
 				count++;
 			}
 		}
+		//divide by how many
 		avgX /= count;
 		avgY /= count;
+		//modify
 		plant_avg_x = (int) avgX;
 		plant_avg_y = (int) avgY;
 		//System.out.println("Average plant location: " + "(" + plant_avg_x + " , " + plant_avg_y + ")");
