@@ -1,4 +1,5 @@
 import java.awt.Graphics2D;
+import java.awt.geom.Point2D;
 import java.awt.image.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -95,8 +96,15 @@ public class map {
 		Actor testHomeNE = new Home(24,0,2);
 		Actor testHomeSW = new Home(0,24,2);
 		Actor testHomeSE = new Home(24,24,2);
+		//make food container!
+		
+		
 		//make fox
-		Actor testFox = new Fox(12,12);
+		Actor testFox = new Fox(12,15,7,18,13,18);
+		
+		
+		Actor testFox2 = new Fox(12,9,7,18,7,12);
+		//Actor testFox2 = new Fox(12,13);
 		//make pattern of plants
 		for (int j = 7;j < 18; j+=2)
 		{
@@ -118,7 +126,8 @@ public class map {
 		nodes[testHomeNW.getXY()[0]][testHomeNW.getXY()[1]].children.add(testHomeSE);
 		actors.add(testFox);
 		nodes[testFox.getXY()[0]][testFox.getXY()[1]].children.add(testFox);
-		
+		actors.add(testFox2);
+		nodes[testFox2.getXY()[0]][testFox2.getXY()[1]].children.add(testFox2);
 		//((Home)testHomeNW).active = false;
 		//((Home)testHomeNE).active = false;
 		//((Home)testHomeSW).active = false;
@@ -137,17 +146,20 @@ public class map {
 		calculateAveragePlantLocation();
 		//flag for seeing if we have won
 		boolean winner = true;
+		//for (final java.util.Iterator<Actor> iterator = actors.iterator(); iterator.hasNext(); )
 		for (Actor a : actors)
 		{
+			//Actor a = iterator.next();
 			//have all actors act
 			a.act(this, actors);
-			//if the actor is FOOD, we have not won, so set winner to false
-			if (a.getTYPE() == actorTYPE.FOOD)
+			//if the actor is FOOD or a BUNNY, since it may drop food, we have not won, so set winner to false
+			if (a.getTYPE() == actorTYPE.FOOD || a.getTYPE() == actorTYPE.BUNNY)
 			{
 				//if there is any food then 
 				winner = false;
 			}
 		}
+		ArrayList<Point2D> food2addBack = new ArrayList<Point2D>();
 		//REMOVE DEAD ACTORS
 		//iterate over all actors
 		for (final java.util.Iterator<Actor> iterator = actors.iterator(); iterator.hasNext(); )
@@ -160,6 +172,7 @@ public class map {
 				iterator.remove();
 			}
 			//if it is a HOME we need to recursivly check its children
+			//HOMES never die, so the isDEAD will always be false, but so do foxes, so make sure the type is HOME
 			else if(a.getTYPE() == actorTYPE.HOME)
 			{
 				//scan through home's stuff
@@ -170,7 +183,13 @@ public class map {
 					if (b.isDead())
 					{
 						//removing dead bunny
+						if(b.full)
+						{
+							//queue up the addition of food items till after the spanning of the array
+							food2addBack.add(new Point2D.Double(b.getXY()[0],b.getXY()[1]));
+						}
 						nodes[b.getXY()[0]][b.getXY()[1]].children.remove(b);
+						//System.out.println("removed: " + b.toString());
 						iteratorInner.remove();
 					}
 				}
@@ -178,6 +197,17 @@ public class map {
 			}
 			
 		}
+		//add any queued food
+		//THIS PREVENTS COMODIFICATION
+		for (Point2D p : food2addBack)
+		{
+			addActor((int)p.getX(),(int)p.getY(),actorTYPE.FOOD);
+			//if we add some food back, you can't win yet!
+			//WIN CONDITION IF ANY RABBITS ARE LEFT
+			winner = false;
+		}
+		
+		
 		//CHECK FOR WIN CONDITION
 		if (!WINNER)
 		{
@@ -240,6 +270,10 @@ public class map {
 		{
 		case FENCE:
 			act = new Fence(x,y);
+			break;
+			
+		case FOOD:
+			act = new Food(x,y);
 			break;
 		default:
 			break;

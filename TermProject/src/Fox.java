@@ -22,11 +22,20 @@ public class Fox implements Actor {
 	boolean pathing;
 	Actor target;
 	Astar stahr = new Astar();
-	
+	//RESTRICTED COORDINATES
+	//BASE- FOR NOW - WILL BE CUSTOMIZABLE
+	/*int minX = 3;
+	int maxX = 22;
+	int minY = 3;
+	int maxY = 22;*/
+	int minX;// = 7;
+	int maxX;// = 18;
+	int minY;// = 7;
+	int maxY;// = 18;
 	//STATS
 	int murders;
 	
-	public Fox(int x, int y) {
+	public Fox(int x, int y,int minX,int maxX,int minY,int maxY) {
 		this.x = x;
 		this.y = y;
 		currentState = state.LOOKING;
@@ -34,6 +43,11 @@ public class Fox implements Actor {
 		pathing = false;
 		target = null;
 		murders = 0;
+		this.minX = minX;
+		this.maxX = maxX;
+		this.minY = minY;
+		this.maxY = maxY;
+		
 	}
 	
 	//LOOKING -> HUNTING -> GUARDING (if unsuccessful) -> REPEAT
@@ -45,7 +59,8 @@ public class Fox implements Actor {
 		switch (currentState)
 		{
 		case LOOKING:
-			Actor a = stahr.breadthFirstBubble(new Point2D.Double(x,y), actorTYPE.BUNNY, 5.0, Map);
+			//Actor a = stahr.breadthFirstBubble(new Point2D.Double(x,y), actorTYPE.BUNNY, 5.0, Map);
+			Actor a = stahr.breadthFirstBubbleRestricted(new Point2D.Double(x,y),maxX,minX,maxY,minY, actorTYPE.BUNNY, 5.0, Map);
 			//System.out.println(a);
 			if (a == null)
 			{
@@ -65,14 +80,7 @@ public class Fox implements Actor {
 					deltY -= 1;
 					x += deltX;
 					y += deltY;
-					if (x < 3 || x > 21)
-					{
-						x = tempX;
-					}
-					if (y < 3 || y > 21)
-					{
-						y = tempY;
-					}
+					
 				}
 				else
 				{
@@ -80,7 +88,7 @@ public class Fox implements Actor {
 					//move towards the average of all the food location
 					//path if behind a wall?
 					//path to the average location/middle if probability is too high
-					if (x > 12.5)
+					if (x > (maxX-minX))//middle of their patrol
 					{
 						x--;
 					}
@@ -88,7 +96,7 @@ public class Fox implements Actor {
 					{
 						x++;
 					}
-					if(y > 12.5)
+					if(y > (maxY-minY))
 					{
 						y--;
 					}
@@ -97,6 +105,15 @@ public class Fox implements Actor {
 						y++;
 					}
 					
+				}
+				
+				if (x <= minX || x >= maxX)//they just walk past the bounds!
+				{
+					x = tempX;
+				}
+				if (y <= minY || y >= maxY)
+				{
+					y = tempY;
 				}
 				
 			}
@@ -125,7 +142,7 @@ public class Fox implements Actor {
 					}
 					Point2D p = path.pop();
 					//System.out.println("position " + x + " , "+ y);
-					if ((int)p.getX() > 3 && (int)p.getX() < 22 && (int)p.getY() > 3 && (int)p.getY() < 22)
+					if ((int)p.getX() > minX && (int)p.getX() < maxX && (int)p.getY() > minY && (int)p.getY() < maxY)
 					{
 						x = (int)p.getX();
 						y = (int)p.getY();
@@ -133,6 +150,7 @@ public class Fox implements Actor {
 					else
 					{
 						//going back to "looking" causes flashing between HUNTING and LOOKING
+						//System.out.println("looking because position outside max");
 						currentState = state.LOOKING;
 						pathing = false;
 						path = null;
@@ -146,23 +164,27 @@ public class Fox implements Actor {
 					{
 						if (x == target.getXY()[0] && y == target.getXY()[1])
 						{
-							//System.out.println("eating bunny hunted");
+							//System.out.println("eating bunny hunted: " + target.toString());
 							murders++;
 							target.die();
 							target = null;
 							currentState = state.LOOKING;
 							pathing = false;
 							path = null;
+							//ADD A FOOD IF TARGET WAS FULL
+							
 						}
 					}
 				}
-				else
+				else if (target == null)
 				{
+					//failure to path :(
+					
 					currentState = state.LOOKING;
 					pathing = false;
 					path = null;
 					target = null;
-					//System.out.println("seek over, going to confused");
+					System.out.println("seek over, going to confused");
 				}
 			}
 			else
@@ -191,6 +213,7 @@ public class Fox implements Actor {
 					murders++;
 					target = null;
 					currentState = state.LOOKING;
+					//ADD A FOOD IF TARGET WAS FULL
 					
 				}
 				else if (a.getTYPE() != actorTYPE.FOOD)
@@ -244,6 +267,10 @@ public class Fox implements Actor {
 		int xReal = x * CELLSIZE;//CELLSIZE
 		int yReal = y * CELLSIZE;//CELLSIZE
 		g2d.fillRect(xReal+1, yReal+1, CELLSIZE-1, CELLSIZE-1);
+		
+		g2d.setColor(new Color(255,0,0,50));//orange
+		g2d.fillRect((CELLSIZE*minX)+1, (CELLSIZE*minY)+1, (CELLSIZE*(maxX-minX))-1, (CELLSIZE*(maxY-minY))-1);
+		
 	}
 
 	@Override

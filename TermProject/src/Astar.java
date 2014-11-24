@@ -47,6 +47,10 @@ public class Astar {
 		//
 	}
 	
+	//start = where the search originates from
+	//a = what kind of thing you are searching for
+	//range = the max range you want to look for
+	//map = map reference
 	public Actor breadthFirstBubble(Point2D start, actorTYPE a, double range, map Map)
 	{
 		ArrayList<Point2D> visited = new ArrayList<Point2D>();
@@ -88,6 +92,46 @@ public class Astar {
 		return null;
 	}
 	
+	public Actor breadthFirstBubbleRestricted(Point2D start,int maxX, int minX, int maxY, int minY, actorTYPE a, double range, map Map)
+	{
+		ArrayList<Point2D> visited = new ArrayList<Point2D>();
+		Queue<Point2D> frontier = new LinkedList<Point2D>();
+		frontier.add(start);
+		visited.add(start);
+		while (!frontier.isEmpty())
+		{
+			Point2D current = frontier.poll();
+			//visited.add(current);
+			//System.out.println(frontier.size());
+			
+			Actor ayy = Map.occupiedActorReturn((int)current.getX(), (int)current.getY(),a);
+			if (ayy != null)	
+			{
+				//System.out.println(ayy.getTYPE());
+				//if (ayy.getTYPE() == a)
+				//{
+					//System.out.println("returning: " + ayy);
+					return ayy;
+				//}
+			}
+			
+        	//for each neighbor in neighbor_nodes(current)
+			ArrayList<Point2D> validNeighbors = getNeighborsExclusionRestricted(current,Map, a,maxX,minX,maxY,minY);
+			
+			for (Point2D neighbor : validNeighbors)
+			{
+				boolean contains = visited.contains(neighbor);
+				if (Point2D.distance(start.getX(), start.getY(), neighbor.getX(), neighbor.getY()) <= range && !contains)
+				{
+					//System.out.println(Point2D.distance(start.getX(), start.getY(), neighbor.getX(), neighbor.getY()));
+					frontier.add(neighbor);		
+					visited.add(neighbor);
+				}
+			}
+		}
+		//System.out.println("returning null");
+		return null;
+	}
 	
 	
 	public Stack<Point2D> pathfindBreadthFirst(Point2D start, Point2D end, map m)
@@ -124,6 +168,7 @@ public class Astar {
 				return reconstructPath(came_from,start,end);
 			
         	//for each neighbor in neighbor_nodes(current)
+			//get neighbors, but exclude blocking for bunnies, which also do not block
 			ArrayList<Point2D> validNeighbors = getNeighborsExclusion(current,m,actorTYPE.BUNNY);
 			for (Point2D neighbor : validNeighbors)
 			{
@@ -155,7 +200,8 @@ public class Astar {
 			}
 		}
 		//return failure
-		System.out.println("FAILURE TO PATH");
+		System.out.print("FAILURE TO PATH FROM: ");
+		System.out.println(start.toString() + " -> " + end.toString());
 		//System.out.println(came_from[624]);
 		//System.out.println(came_from[623]);
 		//System.out.println(came_from[599]);
@@ -213,30 +259,12 @@ public class Astar {
 		{
 			for (double yY = point.getY()-1; yY <= point.getY()+1;yY++)
 			{
-				//if (xX == 24 && yY == 24)
-				//System.out.println("checking: " + xX + "," + yY);
 				if ((point.getX() != xX || point.getY() != yY) && xX >= 0 && xX < 25 && yY >= 0 && yY < 25)//and in bounds
 				{
 					neighbors.add(new Point2D.Double(xX,yY));
-					//if (xX == 24 && yY == 24)
-					//	System.out.println("adding: " + xX + "," + yY);
 				}
 			}
 		}
-		//check for illegal points! (scan actor list and see if conflict)
-		/*for (Actor a : m.actors)
-		{
-			if (a.getTYPE() != actorTYPE.FOOD && a.getTYPE() != actorTYPE.HOME)//THINGS YOU CAN WALK OVER
-			{
-				int[] coor = a.getXY();
-				Point2D illegal = new Point2D.Double(coor[0], coor[1]);
-				if (neighbors.remove(illegal))
-				{
-					//System.out.println("removed");
-				}
-			}
-		}*/
-		
 		for (final Iterator<Point2D> iterator = neighbors.iterator(); iterator.hasNext(); )
 		{
 			Point2D p = iterator.next();
@@ -247,13 +275,6 @@ public class Astar {
 				iterator.remove();
 			}
 		}
-		
-		//System.out.println("Neighbors: ");
-		//for (Point2D p : neighbors)
-		//{
-		//	System.out.print(p.toString());
-		//	System.out.println(" and ");
-		//}
 		return neighbors;
 	}
 	
@@ -286,5 +307,36 @@ public class Astar {
 		}
 		return neighbors;
 	}
+	
+	public ArrayList<Point2D> getNeighborsExclusionRestricted(Point2D point, map m,actorTYPE a, int maxX,int minX,int maxY,int minY)
+	{
+		ArrayList<Point2D> neighbors = new ArrayList<Point2D>();
+		for (double xX = point.getX()-1; xX <= point.getX()+1;xX++)
+		{
+			for (double yY = point.getY()-1; yY <= point.getY()+1;yY++)
+			{
+				//if (xX == 24 && yY == 24)
+				//System.out.println("checking: " + xX + "," + yY);
+				if ((point.getX() != xX || point.getY() != yY) && xX >= minX && xX < maxX && yY >= minY && yY < maxY)//and in bounds
+				{
+					neighbors.add(new Point2D.Double(xX,yY));
+					//if (xX == 24 && yY == 24)
+					//	System.out.println("adding: " + xX + "," + yY);
+				}
+			}
+		}
+		for (final Iterator<Point2D> iterator = neighbors.iterator(); iterator.hasNext(); )
+		{
+			Point2D p = iterator.next();
+			if (m.occupiedExclusion((int)p.getX(), (int)p.getY(), actorTYPE.FOOD) && m.occupiedExclusion((int)p.getX(), (int)p.getY(), actorTYPE.HOME) && m.occupiedExclusion((int)p.getX(), (int)p.getY(), a))
+			{
+				//remove
+				//System.out.println("removed " + p.toString());
+				iterator.remove();
+			}
+		}
+		return neighbors;
+	}
+	
 	
 }

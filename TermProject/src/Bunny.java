@@ -24,12 +24,17 @@ public class Bunny implements Actor {
 	double courage_confused_modifier;   //more courage, less chance of being scared randomly
 	int scared_duration = 0;            //int of how many turns you will be scared
 									//state enum
-	public enum state {CONFUSED,SEEKING,EATING,ACTION,GOING_HOME,SCARED};
+	public enum state {CONFUSED,SEEKING,EATING,ACTION,GOING_HOME,SCARED,NERVOUS};
 	state currentState;			     	//the current state
 	Stack<Point2D> path;				//the current path in a 2D stack
 	boolean pathing;					//bool flag if you are currently pathing (or supposed to)
 	Home home;							//the HOME you run away to (and came from)
 	int overlay;						//overlay boolean
+									//reference to the MAP
+	boolean mapInit;
+	map mappityMap;
+	
+	
 	
 	
 	public Bunny(int xIn, int yIn, Home h, int fight, int flight, int hunger, int courage){
@@ -46,6 +51,8 @@ public class Bunny implements Actor {
 		this.hunger = hunger*2;//2-20 <- take #in a x2
 		courage_confused_modifier =  0.1 - (((double)courage) / 100.0);
 		overlay = 0;
+		mapInit = false;
+		mappityMap = null;
 	}
 	
 	
@@ -54,6 +61,11 @@ public class Bunny implements Actor {
 		// TODO Auto-generated method stub
 		//update the overlay to be current
 		overlay = Map.overlay;
+		if (!mapInit)
+		{
+			mappityMap = Map;
+			mapInit = true;
+		}
 		//System.out.println(overlay + " <- rabbits, map -> " + Map.overlay);
 		//make some temporary ints of the current X,Y
 		int tempX = x, tempY = y;
@@ -181,7 +193,7 @@ public class Bunny implements Actor {
 					else
 					{
 						scared_duration = rand.nextInt(5);
-						currentState = state.SCARED;
+						currentState = state.NERVOUS;
 					}
 				}
 				else
@@ -197,6 +209,16 @@ public class Bunny implements Actor {
 				currentState = state.CONFUSED;
 				path = null;
 				//System.out.println("no pathing, switch to confused");
+			}
+			break;
+		case NERVOUS:
+			if(scared_duration > 0)
+			{
+				scared_duration--;
+			}
+			else
+			{
+				currentState = state.SEEKING;
 			}
 			break;
 		case SCARED:
@@ -264,6 +286,9 @@ public class Bunny implements Actor {
 				}
 				else
 				{
+					//drop off food @ the home
+					//this prevents the food from being REPLACED when it gets home
+					full = false;
 					die();
 				}
 			}
@@ -343,6 +368,8 @@ public class Bunny implements Actor {
 	public void die() {
 		// TODO Auto-generated method stub
 		dead = true;
+		//System.out.println("killing: " + this.toString());
+		//mappityMap.addActor(x, y, actorTYPE.FOOD);
 	}
 
 	@Override
@@ -352,6 +379,9 @@ public class Bunny implements Actor {
 		{
 		case SCARED:
 			g2d.setColor(new Color(0xFFeaab88));//light red
+			break;
+		case NERVOUS:
+			g2d.setColor(new Color(0xFFeae7b2));//light yellow
 			break;
 		case CONFUSED:
 			g2d.setColor(new Color(0xFFccf4ca));//light green
