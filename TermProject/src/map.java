@@ -92,29 +92,34 @@ public class map {
 
 		//BASIC CODE FOR DEBUGGING
 		//make the rabbit holes
-		Actor testHomeNW = new Home(0,0,2);
-		Actor testHomeNE = new Home(24,0,2);
-		Actor testHomeSW = new Home(0,24,2);
-		Actor testHomeSE = new Home(24,24,2);
-		//make food container!
 		
+		
+		Actor testHomeNW = new Home(0,0,4);
+		Actor testHomeNE = new Home(24,0,4);
+		Actor testHomeSW = new Home(0,24,4);
+		Actor testHomeSE = new Home(24,24,4);
+		
+		Actor testFoodContainer = new FoodContainer();
+		//make food container!
+		//make pattern of plants
+				for (int j = 7;j < 18; j+=2)
+				{
+					for (int i = 7; i < 18; i+=2)
+					{
+						Food testFoodTemp = new Food(j,i);
+						((FoodContainer)testFoodContainer).children.add(testFoodTemp);
+						//nodes[j][i].children.add(testFoodTemp);
+					}
+				}
 		
 		//make fox
 		Actor testFox = new Fox(12,15,7,18,13,18);
-		
-		
 		Actor testFox2 = new Fox(12,9,7,18,7,12);
 		//Actor testFox2 = new Fox(12,13);
-		//make pattern of plants
-		for (int j = 7;j < 18; j+=2)
-		{
-			for (int i = 7; i < 18; i+=2)
-			{
-				Actor testFoodTemp = new Food(j,i);
-				actors.add(testFoodTemp);
-				nodes[j][i].children.add(testFoodTemp);
-			}
-		}
+		
+		
+		actors.add(testFoodContainer);
+		((FoodContainer)testFoodContainer).init(this,nodes);
 		//add homes and fox to actors list and the nodes
 		actors.add(testHomeNW);
 		nodes[testHomeNW.getXY()[0]][testHomeNW.getXY()[1]].children.add(testHomeNW);
@@ -153,13 +158,14 @@ public class map {
 			//have all actors act
 			a.act(this, actors);
 			//if the actor is FOOD or a BUNNY, since it may drop food, we have not won, so set winner to false
-			if (a.getTYPE() == actorTYPE.FOOD || a.getTYPE() == actorTYPE.BUNNY)
+			if (a.getTYPE() == actorTYPE.CONTAINER)
 			{
 				//if there is any food then 
-				winner = false;
+				if (!((FoodContainer)a).children.isEmpty())
+					winner = false;
 			}
 		}
-		ArrayList<Point2D> food2addBack = new ArrayList<Point2D>();
+		ArrayList<Food> food2addBack = new ArrayList<Food>();
 		//REMOVE DEAD ACTORS
 		//iterate over all actors
 		for (final java.util.Iterator<Actor> iterator = actors.iterator(); iterator.hasNext(); )
@@ -186,7 +192,15 @@ public class map {
 						if(b.full)
 						{
 							//queue up the addition of food items till after the spanning of the array
-							food2addBack.add(new Point2D.Double(b.getXY()[0],b.getXY()[1]));
+							
+							//pass back the bunny's food object
+							b.food.x = b.x;
+							b.food.y = b.y;
+							//food2addBack.add(b.food);
+							b.food.edible = true;
+							nodes[b.getXY()[0]][b.getXY()[1]].children.add(b.food);
+							//food2addBack.add(new Point2D.Double(b.getXY()[0],b.getXY()[1]));
+							
 						}
 						nodes[b.getXY()[0]][b.getXY()[1]].children.remove(b);
 						//System.out.println("removed: " + b.toString());
@@ -195,17 +209,32 @@ public class map {
 				}
 				
 			}
+			else if(a.getTYPE() == actorTYPE.CONTAINER)
+			{
+				//delete old foods
+				FoodContainer f = (FoodContainer)a;
+				for (final Iterator<Food> iteratorInner = f.children.iterator(); iteratorInner.hasNext(); )
+				{
+					Food b = iteratorInner.next();
+					if (b.isDead())
+					{
+						//System.out.println(occupied(b.getXY()[0],b.getXY()[1]));
+						nodes[b.getXY()[0]][b.getXY()[1]].children.remove(b);
+						//System.out.println(occupied(b.getXY()[0],b.getXY()[1]));
+						//System.out.println("removed: " + b.toString());
+						iteratorInner.remove();
+					}
+					else if (!b.edible)
+					{
+						if (this.occupiedActorReturn(b.getXY()[0],b.getXY()[1], actorTYPE.FOOD) != null)
+							nodes[b.getXY()[0]][b.getXY()[1]].children.remove(b);
+					}
+				}
+			}
 			
 		}
 		//add any queued food
 		//THIS PREVENTS COMODIFICATION
-		for (Point2D p : food2addBack)
-		{
-			addActor((int)p.getX(),(int)p.getY(),actorTYPE.FOOD);
-			//if we add some food back, you can't win yet!
-			//WIN CONDITION IF ANY RABBITS ARE LEFT
-			winner = false;
-		}
 		
 		
 		//CHECK FOR WIN CONDITION
@@ -214,6 +243,7 @@ public class map {
 			if (winner)//if we have no FOOD actors (we checked earlier)
 			{
 				int agg = 0;
+				int murders = 0;
 				//recall all bunnies from HOMES
 				for (Actor a : actors)
 				{
@@ -228,12 +258,14 @@ public class map {
 					else if (a.getTYPE() == actorTYPE.FOX)
 					{
 						//if its a fox, see how many it murdered
-						System.out.println("Number of bunnies lost: " + ((Fox)a).murders);
+						murders += ((Fox)a).murders;
 					}
 				}
 				//WINNER is true!
 				WINNER = true;
+				System.out.println("Number of bunnies lost: " + murders);
 				System.out.println("Number of bunnies used: " + agg);
+				System.out.println("Mortality rate: " + (double)murders/(double)agg);
 				
 			}
 		}

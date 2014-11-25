@@ -119,8 +119,11 @@ public class Home implements Actor {
 		active = false;
 		for (Bunny b : children)
 		{
-			//RECALL EVERYTHING BACK TO HOME
+			//RECALL EVERYTHING BACK TO HOME @ END OF GAME
 			b.currentState = Bunny.state.GOING_HOME;
+			//make them drop any food
+			//b.full = false;
+			
 			b.pathing = false;
 			b.path = null;
 			

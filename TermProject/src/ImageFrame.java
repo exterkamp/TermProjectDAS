@@ -141,8 +141,8 @@ class ImageFrame extends JFrame
 				// the next timer event fires.
 				timer.stop();
 				//if (!myMap.WINNER)
-				
-				myMap.act();
+				//if (!myMap.WINNER)
+					myMap.act();
 				//do action
 				
 				// display the next frame

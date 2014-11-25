@@ -13,6 +13,8 @@ public class Bunny implements Actor {
 	Astar stahr = new Astar();			//the astar object
 	boolean dead = false;               //whether or not the bunny is dead or alive
 	boolean full = false;				//if the bunny is full (has eaten a plant) or not
+	Food food;							//the food object the bunny is carrying!
+	
 	int x;								//the x
 	int y;								//the y
 									//behavior statistics
@@ -84,7 +86,7 @@ public class Bunny implements Actor {
 			{
 				path = stahr.pathfindBreadthFirst(new Point2D.Double(this.x,this.y), new Point2D.Double(food.getXY()[0],food.getXY()[1]), Map);
 				pathing = true;
-				//System.out.println(path.toString());
+				//System.out.println("Going to: " + path.toString() + " is " + food.toString());
 				currentState = state.SEEKING;
 			}
 			
@@ -284,11 +286,18 @@ public class Bunny implements Actor {
 					y = (int)p.getY();
 					
 				}
-				else
+				else if(full == true)
 				{
 					//drop off food @ the home
 					//this prevents the food from being REPLACED when it gets home
 					full = false;
+					//make food die as well?
+					
+					this.food.die();
+					die();
+				}
+				else
+				{
 					die();
 				}
 			}
@@ -297,7 +306,7 @@ public class Bunny implements Actor {
 			break;
 		}
 		//CHECK FOR OVERLAP
-		for (Actor a : actors)
+		/*for (Actor a : actors)
 		{
 			int[] coor = a.getXY();
 			if (this != a && x == coor[0] && y == coor[1])
@@ -309,15 +318,16 @@ public class Bunny implements Actor {
 					{
 						//System.out.println("eating @ " + x + ". " + y);
 						full = true;
+						food = (Food)a;
 						this.currentState = state.EATING;
-						a.die();
+						((Food)a).eat();
 					}
 				}
-				/*if (a.getTYPE() == actorTYPE.FOX)
-				{
-					die();
-					System.out.println("Bunny eaten!");
-				}*/
+				//if (a.getTYPE() == actorTYPE.FOX)
+				//{
+				//	die();
+				//	System.out.println("Bunny eaten!");
+				//}
 				else
 				{
 					//System.out.println("cancelling overlap");
@@ -342,7 +352,43 @@ public class Bunny implements Actor {
 				}
 			}
 			
+		}*/
+		if (Map.occupied(x, y))
+		{
+			//THIS SPACE IS OCCUPIED!
+			//let's see with what!?
+			Actor temp = null;
+			if (Map.occupiedActorReturn(x, y, actorTYPE.FOOD) != null)
+			{
+				temp = Map.occupiedActorReturn(x, y, actorTYPE.FOOD);
+				//FOOD!
+				//eat it
+				if (full == false)
+				{
+					//System.out.println("eating @ " + x + "," + y);
+					full = true;
+					food = (Food)temp;
+					this.currentState = state.EATING;
+					((Food)temp).eat();
+					//Map.nodes[x][y].children.remove(temp);
+				}
+				
+			}
+			else if (Map.occupiedActorReturn(x, y, actorTYPE.FOX) != null)
+			{
+				//FOX!
+				die();
+			}
+			else
+			{
+				//FENCE, or some other error
+				//System.out.println("cancelling overlap");
+				x = tempX;
+				y = tempY;
+			}
+			
 		}
+		
 		
 
 		

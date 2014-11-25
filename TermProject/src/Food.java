@@ -33,7 +33,7 @@ public class Food implements Actor {
 	public void die() {
 		// TODO Auto-generated method stub
 		dead = true;
-		edible = false;
+		//edible = false;
 	}
 	
 	@Override
@@ -42,6 +42,13 @@ public class Food implements Actor {
 		if (edible)
 		{
 			g2d.setColor(Color.GREEN);
+			int xReal = x * CELLSIZE;//CELLSIZE
+			int yReal = y * CELLSIZE;//CELLSIZE
+			g2d.fillRect(xReal+1, yReal+1, CELLSIZE-1, CELLSIZE-1);
+		}
+		else
+		{
+			g2d.setColor(new Color(0,0,255,100));
 			int xReal = x * CELLSIZE;//CELLSIZE
 			int yReal = y * CELLSIZE;//CELLSIZE
 			g2d.fillRect(xReal+1, yReal+1, CELLSIZE-1, CELLSIZE-1);
@@ -60,6 +67,10 @@ public class Food implements Actor {
 	public actorTYPE getTYPE() {
 		// TODO Auto-generated method stub
 		return actorTYPE.FOOD;
+	}
+	
+	public void eat(){
+		edible = false;
 	}
 
 }
