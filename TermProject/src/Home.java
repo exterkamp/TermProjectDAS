@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 
+
 public class Home implements Actor {
 	int x;
 	int y;
 	int max;    //the max number of children
 	boolean active;//if it will spawn bunnies or not
+	boolean active_complete;//true if inactive AND no bunnies out
 	int fight;  //the more fight you have the more chance you will attack and distract the FOX
 	int fligt;  //the more flight you have the more chance you will run away to a HIDE or HOME
 	int hunger; //the more hunger you have the farther away you can see FOOD
@@ -29,8 +31,9 @@ public class Home implements Actor {
 		this.max = max;
 		children = new ArrayList<Bunny>();
 		active = true;
+		active_complete = false;
 		number_of_bunnies_spawned = 0;
-		spawn_time_in_ms = 3000;
+		spawn_time_in_ms = 3000;//3000
 		last_spawn_time_in_ms = 0;
 	}
 	
@@ -38,37 +41,53 @@ public class Home implements Actor {
 	@Override
 	public void act(map Map, ArrayList<Actor> actors) {
 		// TODO Auto-generated method stub
-		//ACT ALL CHILDREN
-		for (final Iterator<Bunny> iterator = children.iterator(); iterator.hasNext(); )
+		if (!children.isEmpty() || active)
 		{
-			Actor a = iterator.next();
-			if (a.isDead())
+			//ACT ALL CHILDREN
+			for (final Iterator<Bunny> iterator = children.iterator(); iterator.hasNext(); )
 			{
-				iterator.remove();
+				Bunny a = iterator.next();
+				//if (a.isDead())
+				//{
+					//this code literally never happens...
+				//	System.out.println("removing in home");
+					
+				//	iterator.remove();
+				//}
+				//else
+				//{
+					if (!active)
+						a.currentState = Bunny.state.GOING_HOME;
+					
+					a.act(Map, actors);
+				//}
 			}
-			else
+			//SPAWN A BUNNY RANDOMLY OR WHATNOT
+			long now = System.currentTimeMillis();
+			//if (children.size() == 0){}
+			
+			if (now - last_spawn_time_in_ms > spawn_time_in_ms)
 			{
-				a.act(Map, actors);
+				if(!Map.occupiedExclusion(x, y,actorTYPE.HOME) && children.size() < max && active)
+				{
+					int[] stats = Map.getStats();
+					Actor bunny = new Bunny(x,y,this,stats[0],stats[1],stats[2],stats[3]);
+					children.add((Bunny)bunny);
+					Map.nodes[x][y].children.add(bunny);//add new
+					number_of_bunnies_spawned++;
+					last_spawn_time_in_ms = now;
+				}
 			}
+			//System.out.println("# children: " + children.size());
 		}
-		//SPAWN A BUNNY RANDOMLY OR WHATNOT
-		long now = System.currentTimeMillis();
-		if (children.size() == 0){}
-		
-		if (now - last_spawn_time_in_ms > spawn_time_in_ms)
+		else
 		{
-			if(!Map.occupiedExclusion(x, y,actorTYPE.HOME) && children.size() < max && active)
-			{
-				int[] stats = Map.getStats();
-				Actor bunny = new Bunny(x,y,this,stats[0],stats[1],stats[2],stats[3]);
-				children.add((Bunny)bunny);
-				Map.nodes[x][y].children.add(bunny);//add new
-				number_of_bunnies_spawned++;
-				last_spawn_time_in_ms = now;
-			}
+			//set some flag
+			//System.out.println("I am complete!" + this.toString());
+			active_complete = true;
+			//System.out.println("amount of children right now: " + children.size());
+			//this.die();
 		}
-		
-		
 		
 	}
 
@@ -76,6 +95,7 @@ public class Home implements Actor {
 	public void die() {
 		// TODO Auto-generated method stub
 		//DOES NOT DIE
+		//dead = true;
 	}
 
 	@Override

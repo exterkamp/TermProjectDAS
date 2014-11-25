@@ -35,7 +35,7 @@ public class Bunny implements Actor {
 									//reference to the MAP
 	boolean mapInit;
 	map mappityMap;
-	
+	Actor fox;							//ref to fox if the bunny can see it
 	
 	
 	
@@ -55,6 +55,7 @@ public class Bunny implements Actor {
 		overlay = 0;
 		mapInit = false;
 		mappityMap = null;
+		fox = null;
 	}
 	
 	
@@ -224,7 +225,43 @@ public class Bunny implements Actor {
 			}
 			break;
 		case SCARED:
-			//if scared_target != null
+			pathing = false;
+			path = null;
+			if (fox != null)
+			{
+				int xBAD = fox.getXY()[0];
+				int yBAD = fox.getXY()[1];
+				if (Point2D.distance(x, y, xBAD, yBAD) > 7)
+				{
+					//you've escaped!
+					//GO HOME IF RECALLED
+					if (full == false)
+						currentState = state.CONFUSED;
+					else
+						currentState = state.GOING_HOME;
+				}
+				else
+				{
+					if (xBAD > x)
+					{
+						x--;
+					}
+					else
+					{
+						x++;
+					}
+					if (yBAD > y)
+					{
+						y--;
+					}
+					else
+					{
+						y++;
+					}
+				}
+				
+			}
+			/*
 				//run away from it
 			pathing = false;
 			path = null;
@@ -251,7 +288,7 @@ public class Bunny implements Actor {
 			else
 			{
 				currentState = state.CONFUSED;
-			}
+			}*/
 			break;
 		case EATING:
 			currentState = state.GOING_HOME;
@@ -387,6 +424,23 @@ public class Bunny implements Actor {
 				y = tempY;
 			}
 			
+		}
+		for (Actor a : actors)
+		{
+			if (a.getTYPE() == actorTYPE.FOX && currentState != state.SCARED)
+			{
+				double some_arbitrary_number = 4.0;
+				double dist = Point2D.distance(x, y, a.getXY()[0], a.getXY()[1]);
+				if (dist < some_arbitrary_number)
+				{
+					scared_duration = rand.nextInt(5);
+					currentState = state.SCARED;
+					pathing = false;
+					path = null;
+					fox = a;
+					//act(Map,actors);
+				}
+			}
 		}
 		
 		

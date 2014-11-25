@@ -141,14 +141,20 @@ class ImageFrame extends JFrame
 				// the next timer event fires.
 				timer.stop();
 				//if (!myMap.WINNER)
-				//if (!myMap.WINNER)
+				if (!myMap.GAME_OVER)
+				{
 					myMap.act();
-				//do action
+					// display the next frame
+					displayBufferedImage();
+					// restart timer (draw next frame in MILLESECONDS_BETWEEN_FRAMES)
+					timer.restart();
+				}
+				else
+				{
+					System.out.println("game over man");
+					//stop the timer
+				}
 				
-				// display the next frame
-				displayBufferedImage();
-				// restart timer (draw next frame in MILLESECONDS_BETWEEN_FRAMES)
-				timer.restart();
 			}
 		});
 		

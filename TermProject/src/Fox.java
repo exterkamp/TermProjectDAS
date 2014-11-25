@@ -61,6 +61,8 @@ public class Fox implements Actor {
 		case LOOKING:
 			//Actor a = stahr.breadthFirstBubble(new Point2D.Double(x,y), actorTYPE.BUNNY, 5.0, Map);
 			Actor a = stahr.breadthFirstBubbleRestricted(new Point2D.Double(x,y),maxX,minX,maxY,minY, actorTYPE.BUNNY, 5.0, Map);
+			//if a not in restricted range, reset to null
+
 			//System.out.println(a);
 			if (a == null)
 			{
@@ -129,8 +131,11 @@ public class Fox implements Actor {
 		case HUNTING:
 			if(target != null)
 			{
+				
 				path = stahr.pathfindBreadthFirst(new Point2D.Double(this.x,this.y), new Point2D.Double(target.getXY()[0],target.getXY()[1]), Map);
 				pathing = true;
+				
+				
 				
 				if (path != null && !path.isEmpty())
 				{
@@ -142,7 +147,7 @@ public class Fox implements Actor {
 					}
 					Point2D p = path.pop();
 					//System.out.println("position " + x + " , "+ y);
-					if ((int)p.getX() > minX && (int)p.getX() < maxX && (int)p.getY() > minY && (int)p.getY() < maxY)
+					if ((int)p.getX() >= minX && (int)p.getX() <= maxX && (int)p.getY() >= minY && (int)p.getY() <= maxY)
 					{
 						x = (int)p.getX();
 						y = (int)p.getY();
@@ -150,7 +155,13 @@ public class Fox implements Actor {
 					else
 					{
 						//going back to "looking" causes flashing between HUNTING and LOOKING
-						//System.out.println("looking because position outside max");
+						//System.out.print("looking because position outside restricted: " + (int)p.getX() + "," + (int)p.getY());
+						//System.out.println(" min: " + minX + "," + minY + " max: " + maxX + "," + maxY);
+						//System.out.println("target: " + target.getXY()[0] + "," + target.getXY()[0]);
+						//System.out.println("my position: " + x + "," + y);
+						
+						//testing has proven this not likely to be the problem
+						//IF IT IS AGAIN, could make restricted PATHFIND so it doesn't even look outside the area
 						currentState = state.LOOKING;
 						pathing = false;
 						path = null;
@@ -178,7 +189,7 @@ public class Fox implements Actor {
 				}
 				else if (target == null)
 				{
-					//failure to path :(
+					//failure to path and target lost :(
 					
 					currentState = state.LOOKING;
 					pathing = false;
@@ -192,7 +203,7 @@ public class Fox implements Actor {
 				currentState = state.LOOKING;
 				path = null;
 				pathing = false;
-				//System.out.println("no pathing, switch to confused");
+				System.out.println("no pathing, switch to confused");
 			}
 			break;
 		default:

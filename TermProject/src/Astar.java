@@ -298,10 +298,11 @@ public class Astar {
 		for (final Iterator<Point2D> iterator = neighbors.iterator(); iterator.hasNext(); )
 		{
 			Point2D p = iterator.next();
-			if (m.occupiedExclusion((int)p.getX(), (int)p.getY(), actorTYPE.FOOD) && m.occupiedExclusion((int)p.getX(), (int)p.getY(), actorTYPE.HOME) && m.occupiedExclusion((int)p.getX(), (int)p.getY(), a))
+			//if (m.occupiedExclusion((int)p.getX(), (int)p.getY(), actorTYPE.FOOD) && m.occupiedExclusion((int)p.getX(), (int)p.getY(), actorTYPE.HOME) && m.occupiedExclusion((int)p.getX(), (int)p.getY(), a))
+			if (m.occupiedNeighbor((int)p.getX(), (int)p.getY()))
 			{
 				//remove
-				//System.out.println("removed " + p.toString());
+				//System.out.println("removed " + p.toString() + "contains: " + m.nodes[(int)p.getX()][(int)p.getY()].children.toString());
 				iterator.remove();
 			}
 		}

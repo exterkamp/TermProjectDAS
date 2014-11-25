@@ -17,6 +17,7 @@ public class map {
 	ArrayList<Actor> actors;         //the actor list
 	int CELLSIZE;                    //the cell's size in px
 	boolean WINNER = false;          //winner boolean flag
+	boolean GAME_OVER = false;       //game over to stop timer
 	int overlay;                     //0 is no overlay, 1 is path overlay
 	int fight;                       //amount of fight
 	int flight;                      //amount of flight
@@ -94,10 +95,10 @@ public class map {
 		//make the rabbit holes
 		
 		
-		Actor testHomeNW = new Home(0,0,4);
-		Actor testHomeNE = new Home(24,0,4);
-		Actor testHomeSW = new Home(0,24,4);
-		Actor testHomeSE = new Home(24,24,4);
+		Actor testHomeNW = new Home(0,0,10);
+		Actor testHomeNE = new Home(24,0,9);
+		Actor testHomeSW = new Home(0,24,5);
+		Actor testHomeSE = new Home(24,24,3);
 		
 		Actor testFoodContainer = new FoodContainer();
 		//make food container!
@@ -151,6 +152,7 @@ public class map {
 		calculateAveragePlantLocation();
 		//flag for seeing if we have won
 		boolean winner = true;
+		boolean game_over = true;
 		//for (final java.util.Iterator<Actor> iterator = actors.iterator(); iterator.hasNext(); )
 		for (Actor a : actors)
 		{
@@ -165,7 +167,7 @@ public class map {
 					winner = false;
 			}
 		}
-		ArrayList<Food> food2addBack = new ArrayList<Food>();
+		//ArrayList<Food> food2addBack = new ArrayList<Food>();
 		//REMOVE DEAD ACTORS
 		//iterate over all actors
 		for (final java.util.Iterator<Actor> iterator = actors.iterator(); iterator.hasNext(); )
@@ -178,11 +180,13 @@ public class map {
 				iterator.remove();
 			}
 			//if it is a HOME we need to recursivly check its children
-			//HOMES never die, so the isDEAD will always be false, but so do foxes, so make sure the type is HOME
+			//HOMES die when gameover only, so the isDEAD will always be false if bunnies outstanding, but so do foxes, so make sure the type is HOME
 			else if(a.getTYPE() == actorTYPE.HOME)
 			{
 				//scan through home's stuff
 				Home h = (Home)a;
+
+				//garbage collect
 				for (final Iterator<Bunny> iteratorInner = h.children.iterator(); iteratorInner.hasNext(); )
 				{
 					Bunny b = iteratorInner.next();
@@ -205,8 +209,12 @@ public class map {
 						nodes[b.getXY()[0]][b.getXY()[1]].children.remove(b);
 						//System.out.println("removed: " + b.toString());
 						iteratorInner.remove();
+						
 					}
 				}
+				
+				if (!h.active_complete)
+					game_over = false;
 				
 			}
 			else if(a.getTYPE() == actorTYPE.CONTAINER)
@@ -235,7 +243,8 @@ public class map {
 		}
 		//add any queued food
 		//THIS PREVENTS COMODIFICATION
-		
+		if (game_over)
+			GAME_OVER = true;
 		
 		//CHECK FOR WIN CONDITION
 		if (!WINNER)
@@ -270,6 +279,7 @@ public class map {
 			}
 		}
 		//render!
+		
 		render();
 	}
 	
@@ -366,6 +376,25 @@ public class map {
 		return null;
 		
 	}
+	
+	public boolean occupiedNeighbor(int x, int y)
+	{
+		//if the node is not empty check it further
+		if (!nodes[x][y].children.isEmpty())
+		{
+			for (Actor a : nodes[x][y].children)
+			{
+				//scan the actors in the node if it is something that should block, return true
+				if (a.getTYPE() == actorTYPE.FOX || a.getTYPE() == actorTYPE.FENCE)
+					return true;
+			}
+		}
+		return false;
+		
+	}
+	
+	
+	
 	public void changeStat(int num, int val)//1 = fight, 2 = flight, 3 = hunger, 4 = courage
 	{
 		//simple switch to change the state stats
