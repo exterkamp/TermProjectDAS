@@ -686,35 +686,7 @@ public class Bunny implements Actor {
 	@Override
 	public void render(Graphics2D g2d,int CELLSIZE) {
 		// TODO Auto-generated method stub
-		switch (currentState)
-		{
-		case SCARED:
-			g2d.setColor(new Color(0xFFeaab88));//light red
-			//if (flight > 1)
-			//	g2d.setColor(new Color(0xFF000000));//light red	
-			break;
-		case NERVOUS:
-			g2d.setColor(new Color(0xFFeae7b2));//light yellow
-			break;
-		case CONFUSED:
-			g2d.setColor(new Color(0xFFccf4ca));//light green
-			break;
-		case GOING_HOME:
-			g2d.setColor(new Color(0xFFdddddd));//light grey
-			break;
-		case FIGHTING:
-			g2d.setColor(new Color(0xFF000000));//light grey
-			break;
-		case FLIGHTING:
-			g2d.setColor(Color.YELLOW);//light grey
-			break;
-		case RUNNING_AWAY:
-			g2d.setColor(Color.magenta);//light grey
-			break;
-		default:
-			g2d.setColor(Color.WHITE);
-			break;
-		}
+		
 		
 		int xReal = x * CELLSIZE;//CELLSIZE
 		int yReal = y * CELLSIZE;//CELLSIZE
@@ -762,6 +734,43 @@ public class Bunny implements Actor {
 		//g2d.drawImage(img, xReal, yReal, width, height, observer)
 		//g2d.drawImage(img, BufferedImageOp.class, xReal, yReal);
 		g2d.drawImage(img, xReal+1, yReal+1, xReal + CELLSIZE, yReal + CELLSIZE, 0, 0, 24, 24, null);
+		
+		
+		switch (currentState)
+		{
+		case SCARED:
+			//g2d.setColor(new Color(0xFFeaab88));//light red
+			g2d.setColor(new Color(0xFFFF0000));//light red
+			//if (flight > 1)
+			//	g2d.setColor(new Color(0xFF000000));//light red	
+			break;
+		case NERVOUS:
+			//g2d.setColor(new Color(0xFFeae7b2));//light yellow
+			g2d.setColor(Color.PINK);//light yellow
+			break;
+		case CONFUSED:
+			//g2d.setColor(new Color(0xFFccf4ca));//light green
+			g2d.setColor(new Color(0xFF00FF00));//light green
+			break;
+		case GOING_HOME:
+			g2d.setColor(new Color(0xFFdddddd));//light grey
+			break;
+		case FIGHTING:
+			g2d.setColor(new Color(0xFF000000));//light grey
+			break;
+		case FLIGHTING:
+			g2d.setColor(Color.YELLOW);//light grey
+			break;
+		case RUNNING_AWAY:
+			g2d.setColor(Color.magenta);//light grey
+			break;
+		default:
+			g2d.setColor(new Color(0,0,0,0));
+			break;
+		}
+		//status ICON above head
+		g2d.fillRect(xReal+1 + (3*CELLSIZE/8), yReal+1-(CELLSIZE/4), CELLSIZE/4, CELLSIZE/4);
+		
 		//RENDER PATH
 		
 		if (path != null && path.size() > 0 && overlay == 1)
