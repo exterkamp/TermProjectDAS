@@ -95,10 +95,10 @@ public class map {
 		//make the rabbit holes
 		
 		
-		Actor testHomeNW = new Home(0,0,10);
-		Actor testHomeNE = new Home(24,0,9);
-		Actor testHomeSW = new Home(0,24,5);
-		Actor testHomeSE = new Home(24,24,3);
+		Actor testHomeNW = new Home(0,0,4);
+		Actor testHomeNE = new Home(24,0,4);
+		Actor testHomeSW = new Home(0,24,4);
+		Actor testHomeSE = new Home(24,24,4);
 		
 		Actor testFoodContainer = new FoodContainer();
 		//make food container!
@@ -114,8 +114,10 @@ public class map {
 				}
 		
 		//make fox
-		Actor testFox = new Fox(12,15,7,18,13,18);
-		Actor testFox2 = new Fox(12,9,7,18,7,12);
+		//Actor testFox = new Fox(12,15,7,18,13,18);
+		//Actor testFox2 = new Fox(12,9,7,18,7,12);
+		Actor testFox = new Fox(12,15,6,19,12,19);
+		Actor testFox2 = new Fox(12,9,6,19,6,13);
 		//Actor testFox2 = new Fox(12,13);
 		
 		
@@ -336,8 +338,9 @@ public class map {
 	public boolean occupied(int x, int y)
 	{
 		//check the node at x,y if it has children
-		return !nodes[x][y].children.isEmpty();
-		
+		//if (x > 24 || y > 24 || x < 0 || y < 0)
+			return !nodes[x][y].children.isEmpty();
+		//return false;
 	}
 	
 	public boolean occupiedExclusion(int x, int y,actorTYPE ex)
@@ -438,12 +441,15 @@ public class map {
 		for (Actor a : actors)
 		{
 			//if it is a plant then add it to the totals
-			if (a.getTYPE() == actorTYPE.FOOD)
+			if (a.getTYPE() == actorTYPE.CONTAINER)
 			{
-				//add its x's and y's tp the total
-				avgX += a.getXY()[0];
-				avgY += a.getXY()[1];
-				count++;
+				for (Actor f : ((FoodContainer)a).children)
+				{
+					//add its x's and y's tp the total
+					avgX += f.getXY()[0];
+					avgY += f.getXY()[1];
+					count++;
+				}
 			}
 		}
 		//divide by how many

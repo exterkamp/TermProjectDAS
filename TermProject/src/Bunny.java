@@ -1,9 +1,16 @@
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Observer;
 import java.util.Random;
 import java.util.Stack;
+
+import javax.imageio.ImageIO;
 
 
 public class Bunny implements Actor {
@@ -25,8 +32,23 @@ public class Bunny implements Actor {
 	int courage;						//the more courage you have the more you will use DISTRACTIONS and not be scared
 	double courage_confused_modifier;   //more courage, less chance of being scared randomly
 	int scared_duration = 0;            //int of how many turns you will be scared
+	int fight_duration = 0;
+									//directionlal enum
+	public enum direction {NW,N,NE,E,SE,S,SW,W};
+	direction currentDirection;
+	
 									//state enum
-	public enum state {CONFUSED,SEEKING,EATING,ACTION,GOING_HOME,SCARED,NERVOUS};
+	public enum state {CONFUSED,SEEKING,EATING,GOING_HOME,SCARED,NERVOUS,FIGHTING,FLIGHTING,RUNNING_AWAY};
+	//confused is natural state, tends toward average plant position and searches for plants
+	//seeking is when a plant is found and is pathing to it
+	//eating is the action of eating a plant
+	//going_home is, obvious, going to it's home object
+	//scared is when it has seen the fox and will conduct an escape
+	//nervous is when the path is interrupted by nervousness, stemming from a low COURAGE
+	//fighting
+	//flighting
+	//running away 
+	
 	state currentState;			     	//the current state
 	Stack<Point2D> path;				//the current path in a 2D stack
 	boolean pathing;					//bool flag if you are currently pathing (or supposed to)
@@ -45,6 +67,7 @@ public class Bunny implements Actor {
 		x = xIn;
 		y = yIn;
 		currentState = state.CONFUSED;
+		currentDirection = direction.N;
 		path = null;
 		pathing = false;
 		home = h;
@@ -160,6 +183,7 @@ public class Bunny implements Actor {
 				//move towards the average of all the food location
 				//path if behind a wall?
 				//path to the average location/middle if probability is too high
+				
 				if (x > Map.plant_avg_x)
 				{
 					x--;
@@ -183,7 +207,13 @@ public class Bunny implements Actor {
 		case SEEKING:	
 			if(pathing && path != null)
 			{
-				
+				if (path.size() > 0 && Map.occupiedActorReturn((int)path.firstElement().getX(), (int)path.firstElement().getY(), actorTYPE.FOOD) == null)
+				{
+					//System.out.println("FOOD LOST! @ " + (int)path.firstElement().getX() + (int)path.firstElement().getY());
+					currentState = state.CONFUSED;
+					//pathing = false;
+					//path = null;
+				}
 				if (!path.isEmpty())
 				{
 					if (rand.nextDouble() > courage_confused_modifier)
@@ -227,68 +257,76 @@ public class Bunny implements Actor {
 		case SCARED:
 			pathing = false;
 			path = null;
+			//THREE OPTIONS
+			//	RUN AWAY (REGULAR)
+			//	RUN AWAY (AND DROP FOOD)
+			//	RUN HOME & DROP FOOD
+			//	FIGHT
 			if (fox != null)
 			{
-				int xBAD = fox.getXY()[0];
-				int yBAD = fox.getXY()[1];
-				if (Point2D.distance(x, y, xBAD, yBAD) > 7)
+				//seed the random decision by adding in all the chances
+				int total = fight+flight+((fight+flight)/2);
+				if (total == 0)
+					total = 1;
+				//fight and flight get their options 
+				//and a regular escape gets an entry equal to the average of the two
+				//total = total + (int)total/2;;
+				
+				int choice = rand.nextInt(total);
+				if (choice < fight)
 				{
-					//you've escaped!
-					//GO HOME IF RECALLED
-					if (full == false)
-						currentState = state.CONFUSED;
-					else
-						currentState = state.GOING_HOME;
+					//FIGHT
+					//STAY STILL AND SLOW DOWN FOX FOR rand(3) TURNS AFTER EATING RABBIT
+					currentState = state.FIGHTING;
+					//System.out.println("fighting");
+					
+				}
+				else if (choice < (fight+flight))
+				{
+					//FLIGHT
+					//RUN AWAY DOUBLE SPEED AND HOLD ONTO FOOD
+					currentState = state.FLIGHTING;
+					//System.out.println("flighting");
 				}
 				else
 				{
-					if (xBAD > x)
+					//RUN AWAY
+					//RUN AWAY AND DROP FOOD AND RUN HOME IF COURAGE IS LOW
+					//System.out.println("running away");
+					if (rand.nextDouble() < courage_confused_modifier)
 					{
-						x--;
+						//courage is okay, run away
+						currentState = state.RUNNING_AWAY;
 					}
 					else
 					{
-						x++;
-					}
-					if (yBAD > y)
-					{
-						y--;
-					}
-					else
-					{
-						y++;
+						//NO COURAGE
+						//drop food and run home
+						if(full)
+						{
+							//pass back the bunny's food object
+							this.food.x = x;
+							this.food.y = y;
+							//food2addBack.add(b.food);
+							this.food.edible = true;
+							Map.nodes[x][y].children.add(this.food);
+							this.food = null;
+							this.full = false;
+							//System.out.println("dropped food");
+						}
+						this.currentState = state.GOING_HOME;
+						
 					}
 				}
 				
-			}
-			/*
-				//run away from it
-			pathing = false;
-			path = null;
-			
-			//scared_target == null
-			if(scared_duration > 0)
-			{
-				deltX = rand.nextInt(3);
-				deltX -= 1;
-				deltY = rand.nextInt(3);
-				deltY -= 1;
-				x += deltX;
-				y += deltY;
-				if (x < 0 || x > 24)
-				{
-					x = tempX;
-				}
-				if (y < 0 || y > 24)
-				{
-					y = tempY;
-				}
-				scared_duration--;
+				
+				
 			}
 			else
 			{
 				currentState = state.CONFUSED;
-			}*/
+			}
+			
 			break;
 		case EATING:
 			currentState = state.GOING_HOME;
@@ -300,6 +338,9 @@ public class Bunny implements Actor {
 			act(Map,actors);
 			break;
 		case GOING_HOME://does not know to go home after getting scared by the fox
+			//pathing = false;
+			//path = null;
+			
 			//make path
 			//System.out.println("going home!");
 			if (!pathing && !(x == 0 && y == 0))//if not pathing and not home
@@ -339,9 +380,108 @@ public class Bunny implements Actor {
 				}
 			}
 			break;
+		case RUNNING_AWAY:	
+			//RUN AWAY REGULAR
+			if (fox != null)
+			{
+				int xBAD = fox.getXY()[0];
+				int yBAD = fox.getXY()[1];
+				if (Point2D.distance(x, y, xBAD, yBAD) > 7)
+				{
+					//you've escaped!
+					//GO HOME IF RECALLED
+					if (full == false)
+						currentState = state.CONFUSED;
+					else
+						currentState = state.GOING_HOME;
+					
+					fox = null;
+				}
+				else
+				{
+					if (xBAD > x)
+					{
+						x--;
+					}
+					else
+					{
+						x++;
+					}
+					if (yBAD > y)
+					{
+						y--;
+					}
+					else
+					{
+						y++;
+					}
+				}
+			}
+			else
+			{
+				currentState = state.CONFUSED;
+			}
+			break;
+		case FLIGHTING:
+			//RUN AWAY REGULAR
+			if (fox != null)
+			{
+				int xBAD = fox.getXY()[0];
+				int yBAD = fox.getXY()[1];
+				if (Point2D.distance(x, y, xBAD, yBAD) > 7)
+				{
+					//you've escaped!
+					//GO HOME IF RECALLED
+					if (full == false)
+						currentState = state.CONFUSED;
+					else
+						currentState = state.GOING_HOME;
+					
+					fox = null;
+				}
+				else
+				{
+					if (xBAD > x)
+					{
+						x--;
+						x--;
+					}
+					else
+					{
+						x++;
+						x++;
+					}
+					if (yBAD > y)
+					{
+						y--;
+						y--;
+					}
+					else
+					{
+						y++;
+						y++;
+					}
+				}
+			}
+			else
+			{
+				currentState = state.CONFUSED;
+			}
+			break;
+		case FIGHTING:
+			if (fight_duration >= 3)
+			{
+				fox = null;
+				currentState = state.CONFUSED;
+				fight_duration = 0;
+			}
+			fight_duration++;
+			break;
 		default:
 			break;
 		}
+		
+		/***********************************************************END OF STATE DEFININITIONS******************************************************/
 		//CHECK FOR OVERLAP
 		/*for (Actor a : actors)
 		{
@@ -390,6 +530,10 @@ public class Bunny implements Actor {
 			}
 			
 		}*/
+		
+		//CATCH OUT OF BOUNDS
+		if (x <= 24 && x >= 0 && y <= 24 && y >= 0)
+		{
 		if (Map.occupied(x, y))
 		{
 			//THIS SPACE IS OCCUPIED!
@@ -425,24 +569,48 @@ public class Bunny implements Actor {
 			}
 			
 		}
-		for (Actor a : actors)
+		}
+		else
 		{
-			if (a.getTYPE() == actorTYPE.FOX && currentState != state.SCARED)
+			x = tempX;
+			y = tempY;
+		}
+		
+		if (currentState != state.SCARED && fox == null)
+		{
+			for (Actor a : actors)
 			{
-				double some_arbitrary_number = 4.0;
-				double dist = Point2D.distance(x, y, a.getXY()[0], a.getXY()[1]);
-				if (dist < some_arbitrary_number)
+				if (a.getTYPE() == actorTYPE.FOX)
 				{
-					scared_duration = rand.nextInt(5);
-					currentState = state.SCARED;
-					pathing = false;
-					path = null;
-					fox = a;
-					//act(Map,actors);
+					if (((Fox)a).currentState != Fox.state.SLOWED)//if he is slowed, don't care
+					{
+						double some_arbitrary_number = 5.0;
+						double dist = Point2D.distance(x, y, a.getXY()[0], a.getXY()[1]);
+						if (dist < some_arbitrary_number)
+						{
+							scared_duration = rand.nextInt(5);
+							currentState = state.SCARED;
+							pathing = false;
+							path = null;
+							fox = a;
+							//act(Map,actors);
+							
+						}
+					}
 				}
 			}
 		}
 		
+		//if the fox is slowed then don't be scared!
+		if (fox != null)
+		{
+			if (((Fox)fox).currentState == Fox.state.SLOWED)
+			{
+				currentState = state.CONFUSED;
+				fox = null;
+				
+			}
+		}
 		
 
 		
@@ -453,9 +621,52 @@ public class Bunny implements Actor {
 		{
 			Map.nodes[tempX][tempY].children.remove(this);//remove old
 			Map.nodes[x][y].children.add(this);//add new
+			
+			//figure out the direction
+			if (x > tempX)//EAST
+			{
+				if(y < tempY)//NORTH-EAST
+				{
+					currentDirection = direction.NE;
+				}
+				else if(y > tempY)//SOUTH-EAST
+				{
+					currentDirection = direction.SE;
+				}
+				else//EAST
+				{
+					currentDirection = direction.E;
+				}
+			}
+			else if (x < tempX)//WEST
+			{
+				if(y < tempY)//NORTH-WEST
+				{
+					currentDirection = direction.NW;
+				}
+				else if (y > tempY)//SOUTH-WEST
+				{
+					currentDirection = direction.SW;
+				}
+				else
+				{
+					currentDirection = direction.W;
+				}
+			}
+			else//NO X DIFF
+			{
+				if(y < tempY)//NORTH
+				{
+					currentDirection = direction.N;
+				}
+				else if (y > tempY)//SOUTH
+				{
+					currentDirection = direction.S;
+				}
+			}
+			
 		}
 		//System.out.println(Map.nodes[x][y].children.get(Map.nodes[x][y].children.indexOf(this)).getTYPE() + "@ point" + x + " , " + y);
-		
 	}
 
 	@Override
@@ -479,6 +690,8 @@ public class Bunny implements Actor {
 		{
 		case SCARED:
 			g2d.setColor(new Color(0xFFeaab88));//light red
+			//if (flight > 1)
+			//	g2d.setColor(new Color(0xFF000000));//light red	
 			break;
 		case NERVOUS:
 			g2d.setColor(new Color(0xFFeae7b2));//light yellow
@@ -489,6 +702,15 @@ public class Bunny implements Actor {
 		case GOING_HOME:
 			g2d.setColor(new Color(0xFFdddddd));//light grey
 			break;
+		case FIGHTING:
+			g2d.setColor(new Color(0xFF000000));//light grey
+			break;
+		case FLIGHTING:
+			g2d.setColor(Color.YELLOW);//light grey
+			break;
+		case RUNNING_AWAY:
+			g2d.setColor(Color.magenta);//light grey
+			break;
 		default:
 			g2d.setColor(Color.WHITE);
 			break;
@@ -496,8 +718,50 @@ public class Bunny implements Actor {
 		
 		int xReal = x * CELLSIZE;//CELLSIZE
 		int yReal = y * CELLSIZE;//CELLSIZE
-		g2d.fillRect(xReal+1, yReal+1, CELLSIZE-1, CELLSIZE-1);
+		//g2d.fillRect(xReal+1, yReal+1, CELLSIZE-1, CELLSIZE-1);
+		String filepath = "src/images/";
+		String filename = "";
+		BufferedImage img = null;
+		switch (currentDirection)
+		{
+			case NW:
+				filename = "NW";
+				break;
+			case N:
+				filename = "N";
+				break;
+			case NE:
+				filename = "NE";
+				break;
+			case E:
+				filename = "E";
+				break;
+			case SE:
+				filename = "SE";
+				break;
+			case S:
+				filename = "S";
+				break;
+			case SW:
+				filename = "SW";
+				break;
+			case W:
+				filename = "W";
+				break;
+			default:
+				filename = "N";
+				break;
+		}
+		filepath = filepath + "" + filename;
+		filepath = filepath + ".png";
 		
+		try {
+		    img = ImageIO.read(new File(filepath));
+		} catch (IOException e) {
+		}
+		//g2d.drawImage(img, xReal, yReal, width, height, observer)
+		//g2d.drawImage(img, BufferedImageOp.class, xReal, yReal);
+		g2d.drawImage(img, xReal+1, yReal+1, xReal + CELLSIZE, yReal + CELLSIZE, 0, 0, 24, 24, null);
 		//RENDER PATH
 		
 		if (path != null && path.size() > 0 && overlay == 1)

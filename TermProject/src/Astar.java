@@ -202,6 +202,7 @@ public class Astar {
 		//return failure
 		System.out.print("FAILURE TO PATH FROM: ");
 		System.out.println(start.toString() + " -> " + end.toString());
+		
 		//System.out.println(came_from[624]);
 		//System.out.println(came_from[623]);
 		//System.out.println(came_from[599]);
@@ -209,6 +210,86 @@ public class Astar {
 		//System.exit(0);
 		return null;
 	}
+	
+	public Stack<Point2D> pathfindBreadthFirst(Point2D start, int maxX, int minX, int maxY, int minY, Point2D end, map m)
+	{
+		boolean DEBUG = false;
+		if (DEBUG)
+		System.out.println(start.toString() + " -> " + end.toString());
+		//right now breadth first
+        //openset := {start}    // The set of tentative nodes to be evaluated, initially containing the start node
+		Queue<Point2D> frontier = new LinkedList<Point2D>();
+		
+		frontier.add(start);
+		//came_from := the empty map     //The map of navigated nodes.
+		
+		int[] came_from = new int[625];
+		for (int i = 0; i < came_from.length;i++)
+		{
+			came_from[i] = -2;
+		}
+		//came_from.add(new tuple(start, null));
+		came_from[(int)(start.getX() + start.getY()*25)] = -1;
+		//while openset is not empty
+		while (!frontier.isEmpty())
+		{
+			
+        	//current := the node in openset having the lowest f_score[] value
+			Point2D current = frontier.poll();
+			
+			if (DEBUG)
+			System.out.println(current.toString());
+        	//if current = goal
+            	//return reconstruct_path(came_from, goal)
+			if (current.getX() == end.getX() && current.getY() == end.getY())	
+				return reconstructPath(came_from,start,end);
+			
+        	//for each neighbor in neighbor_nodes(current)
+			//get neighbors, but exclude blocking for bunnies, which also do not block
+			//ArrayList<Point2D> validNeighbors = getNeighborsExclusion(current,m,actorTYPE.BUNNY);
+			ArrayList<Point2D> validNeighbors = getNeighborsExclusionRestricted(current,m, actorTYPE.BUNNY,maxX,minX,maxY,minY);
+			for (Point2D neighbor : validNeighbors)
+			{
+				boolean contains = false;
+				
+				if (came_from[(int)(neighbor.getX() + neighbor.getY()*25)] != -2)
+				{
+					contains = true;
+					//if (DEBUG)
+					//	System.out.println("contains duplicate");
+				}
+				
+				if (!contains)
+				{
+					frontier.add(neighbor);
+					//came_from.add(new tuple(neighbor, current));
+					if (DEBUG)
+					if ((int)(neighbor.getX() + neighbor.getY()*25) == 624)
+					{
+						System.out.println("where it came from: " + current.getX() + current.getY());
+						System.out.println("index it came from: " + (int)(current.getX() + current.getY()*25));
+					}
+					came_from[(int)(neighbor.getX() + neighbor.getY()*25)] = (int)(current.getX() + current.getY()*25);
+					
+					
+					if (DEBUG)
+						System.out.println(neighbor.toString() + " came from " + current.toString());
+				}
+			}
+		}
+		//return failure
+		System.out.print("FAILURE TO PATH FROM: ");
+		System.out.println(start.toString() + " -> " + end.toString());
+		System.out.println(" min: " + minX + "," + minY + " max: " + maxX + "," + maxY);
+		//System.out.println(came_from[624]);
+		//System.out.println(came_from[623]);
+		//System.out.println(came_from[599]);
+		//System.out.println(came_from[598]);
+		//System.exit(0);
+		return null;
+	}
+	
+	
 	
 	public Stack<Point2D> reconstructPath(int[] came_from, Point2D start, Point2D end)
 	{
@@ -318,7 +399,7 @@ public class Astar {
 			{
 				//if (xX == 24 && yY == 24)
 				//System.out.println("checking: " + xX + "," + yY);
-				if ((point.getX() != xX || point.getY() != yY) && xX >= minX && xX < maxX && yY >= minY && yY < maxY)//and in bounds
+				if ((point.getX() != xX || point.getY() != yY) && xX >= minX && xX <= maxX && yY >= minY && yY <= maxY)//and in bounds
 				{
 					neighbors.add(new Point2D.Double(xX,yY));
 					//if (xX == 24 && yY == 24)
@@ -329,7 +410,8 @@ public class Astar {
 		for (final Iterator<Point2D> iterator = neighbors.iterator(); iterator.hasNext(); )
 		{
 			Point2D p = iterator.next();
-			if (m.occupiedExclusion((int)p.getX(), (int)p.getY(), actorTYPE.FOOD) && m.occupiedExclusion((int)p.getX(), (int)p.getY(), actorTYPE.HOME) && m.occupiedExclusion((int)p.getX(), (int)p.getY(), a))
+			//if (m.occupiedExclusion((int)p.getX(), (int)p.getY(), actorTYPE.FOOD) && m.occupiedExclusion((int)p.getX(), (int)p.getY(), actorTYPE.HOME) && m.occupiedExclusion((int)p.getX(), (int)p.getY(), a))
+			if (m.occupiedNeighbor((int)p.getX(), (int)p.getY()))
 			{
 				//remove
 				//System.out.println("removed " + p.toString());

@@ -14,7 +14,7 @@ public class Fox implements Actor {
 	int x; 
 	int y;
 	//state enum
-	public enum state {LOOKING, HUNTING, GUARDING, EATING};
+	public enum state {LOOKING, HUNTING, GUARDING, EATING, SLOWED};
 	//the current state
 	state currentState;
 	//the current path
@@ -22,6 +22,7 @@ public class Fox implements Actor {
 	boolean pathing;
 	Actor target;
 	Astar stahr = new Astar();
+	int slowed_duration = 0;
 	//RESTRICTED COORDINATES
 	//BASE- FOR NOW - WILL BE CUSTOMIZABLE
 	/*int minX = 3;
@@ -34,6 +35,7 @@ public class Fox implements Actor {
 	int maxY;// = 18;
 	//STATS
 	int murders;
+	
 	
 	public Fox(int x, int y,int minX,int maxX,int minY,int maxY) {
 		this.x = x;
@@ -60,7 +62,7 @@ public class Fox implements Actor {
 		{
 		case LOOKING:
 			//Actor a = stahr.breadthFirstBubble(new Point2D.Double(x,y), actorTYPE.BUNNY, 5.0, Map);
-			Actor a = stahr.breadthFirstBubbleRestricted(new Point2D.Double(x,y),maxX,minX,maxY,minY, actorTYPE.BUNNY, 5.0, Map);
+			Actor a = stahr.breadthFirstBubbleRestricted(new Point2D.Double(x,y),maxX,minX,maxY,minY, actorTYPE.BUNNY, 6.0, Map);
 			//if a not in restricted range, reset to null
 
 			//System.out.println(a);
@@ -132,18 +134,36 @@ public class Fox implements Actor {
 			if(target != null)
 			{
 				
-				path = stahr.pathfindBreadthFirst(new Point2D.Double(this.x,this.y), new Point2D.Double(target.getXY()[0],target.getXY()[1]), Map);
-				pathing = true;
-				
+				if (target.getXY()[0] >= minX && target.getXY()[0] <= maxX && target.getXY()[1] >= minY && target.getXY()[1] <= maxY) 
+				{
+					//path = stahr.pathfindBreadthFirst(new Point2D.Double(this.x,this.y), new Point2D.Double(target.getXY()[0],target.getXY()[1]), Map);
+					path = stahr.pathfindBreadthFirst(new Point2D.Double(this.x,this.y),maxX,minX,maxY,minY, new Point2D.Double(target.getXY()[0],target.getXY()[1]), Map);
+					pathing = true;
+				}
+				else
+				{
+					currentState = state.LOOKING;
+					pathing = false;
+					path = null;
+					target = null;
+					//System.out.println("target out of range!");
+				}
+			
 				
 				
 				if (path != null && !path.isEmpty())
 				{
 					if (path.size() > 1)
 					{
-						path.pop();
-						if (path.size() > 1)
+						Point2D pp = path.peek();
+						if((int)pp.getX() >= minX && (int)pp.getX() <= maxX && (int)pp.getY() >= minY && (int)pp.getY() <= maxY)
 							path.pop();
+						if (path.size() > 1)
+						{
+							pp = path.peek();
+							if((int)pp.getX() >= minX && (int)pp.getX() <= maxX && (int)pp.getY() >= minY && (int)pp.getY() <= maxY)
+								path.pop();
+						}
 					}
 					Point2D p = path.pop();
 					//System.out.println("position " + x + " , "+ y);
@@ -157,7 +177,7 @@ public class Fox implements Actor {
 						//going back to "looking" causes flashing between HUNTING and LOOKING
 						//System.out.print("looking because position outside restricted: " + (int)p.getX() + "," + (int)p.getY());
 						//System.out.println(" min: " + minX + "," + minY + " max: " + maxX + "," + maxY);
-						//System.out.println("target: " + target.getXY()[0] + "," + target.getXY()[0]);
+						//System.out.println("  target: " + target.getXY()[0] + "," + target.getXY()[0]);
 						//System.out.println("my position: " + x + "," + y);
 						
 						//testing has proven this not likely to be the problem
@@ -176,10 +196,27 @@ public class Fox implements Actor {
 						if (x == target.getXY()[0] && y == target.getXY()[1])
 						{
 							//System.out.println("eating bunny hunted: " + target.toString());
+							//IM THE ONE
+							if (((Bunny)target).currentState == Bunny.state.FIGHTING)
+							{
+								slowed_duration = rand.nextInt(4);//duration is 3-5
+								slowed_duration += 5;  
+								//0 -> 5
+								//4 -> 9
+								currentState = state.SLOWED;
+								//System.out.println(((Bunny)target).currentState);
+								
+							}
+							else
+							{
+								currentState = state.LOOKING;
+								//System.out.println(((Bunny)target).currentState);
+								
+							}
 							murders++;
 							target.die();
 							target = null;
-							currentState = state.LOOKING;
+							//currentState = state.LOOKING;
 							pathing = false;
 							path = null;
 							//ADD A FOOD IF TARGET WAS FULL
@@ -195,8 +232,9 @@ public class Fox implements Actor {
 					pathing = false;
 					path = null;
 					target = null;
-					System.out.println("seek over, going to confused");
+					//System.out.println("seek over, going to confused");
 				}
+				
 			}
 			else
 			{
@@ -205,6 +243,18 @@ public class Fox implements Actor {
 				pathing = false;
 				System.out.println("no pathing, switch to confused");
 			}
+			break;
+		case SLOWED:
+			if (slowed_duration != 0)
+			{
+				slowed_duration--;
+			}
+			else
+			{
+				currentState = state.LOOKING;
+			}
+			
+			
 			break;
 		default:
 			break;
@@ -216,16 +266,27 @@ public class Fox implements Actor {
 			int[] coor = a.getXY();
 			if (this != a && x == coor[0] && y == coor[1])
 			{
-				//EAT PLANTS
+				//EAT BUNNIES
 				if (a.getTYPE() == actorTYPE.BUNNY)
 				{
 					//System.out.println("eating bunny accident");
+					//IM NEVER REALLY CALLED
+					if (((Bunny)a).currentState == Bunny.state.FIGHTING)
+					{
+						target = null;
+						slowed_duration = rand.nextInt(5);
+						currentState = state.SLOWED;
+						System.out.println(((Bunny)a).currentState);
+					}
+					else
+					{
+						target = null;
+						currentState = state.LOOKING;
+						System.out.println(((Bunny)a).currentState);
+					}
+					//ADD A FOOD IF TARGET WAS FULL
 					a.die();
 					murders++;
-					target = null;
-					currentState = state.LOOKING;
-					//ADD A FOOD IF TARGET WAS FULL
-					
 				}
 				else if (a.getTYPE() != actorTYPE.FOOD)
 				{
@@ -270,6 +331,9 @@ public class Fox implements Actor {
 		case GUARDING:
 			g2d.setColor(new Color(0xFFdb978b));//washout orange
 			break;
+		case SLOWED:
+			g2d.setColor(new Color(0xFF6655dd));//washout blue
+			break;
 		default:
 			g2d.setColor(new Color(0xFFe3482d));//orange
 			break;
@@ -279,9 +343,33 @@ public class Fox implements Actor {
 		int yReal = y * CELLSIZE;//CELLSIZE
 		g2d.fillRect(xReal+1, yReal+1, CELLSIZE-1, CELLSIZE-1);
 		
-		g2d.setColor(new Color(255,0,0,50));//orange
+		g2d.setColor(new Color(100,100,0,50));//orange
 		g2d.fillRect((CELLSIZE*minX)+1, (CELLSIZE*minY)+1, (CELLSIZE*(maxX-minX))-1, (CELLSIZE*(maxY-minY))-1);
-		
+		if (path != null && path.size() > 0)
+		{
+			Color[] cols = new Color[path.size()];
+			int red = 255;
+			int alpha = 255;
+			int inc = -1*(255/(path.size()));
+			for (int i = cols.length-1; i >= 0; i--)
+			{
+				cols[i] = new Color(0,0,red,alpha);
+				red += inc;
+				alpha += inc;
+			}
+			inc = 0;
+			Point2D old = null;
+			for (Point2D p : path)
+			{
+				g2d.setColor(cols[inc]);//light grey
+				inc++;
+				g2d.fillRect(((int)p.getX() * CELLSIZE)+1+9, ((int)p.getY() * CELLSIZE)+1+9, CELLSIZE-1-16, CELLSIZE-1-16);
+				if (old != null)
+				g2d.drawLine(((int)old.getX() * CELLSIZE)+12, ((int)old.getY() * CELLSIZE)+12, ((int)p.getX() * CELLSIZE)+12, ((int)p.getY() * CELLSIZE)+12);
+				old = p;
+				
+			}
+		}
 	}
 
 	@Override
