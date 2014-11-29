@@ -49,6 +49,17 @@ class ImageFrame extends JFrame
 	int CELLSIZE;
 	int stats[];
 	
+	//component references
+	JButton playPause;
+	JLabel active_bunnies;
+	JLabel dead_bunnies;
+	JLabel bunnies_left;
+	JLabel recent_events;
+	
+	int active_bunnies_num = 0;
+	int dead_bunnies_num   = 0;
+	int bunnies_left_num   = 0;
+	String recent_events_list = "Events: /n";
 	
 	public ImageFrame(int choice)
 	{
@@ -87,7 +98,11 @@ class ImageFrame extends JFrame
 				boolean actor_click = false;
 				int x = (point.x / myMap.CELLSIZE);
 				int y = (point.y / myMap.CELLSIZE);
-				for (Actor a : myMap.actors)
+				if (myMap.occupied(x, y))
+				{
+					actor_click = true;	
+				}
+				/*for (Actor a : myMap.actors)
 				{
 					//search
 					if (a.getXY()[0] == x && a.getXY()[1] == y)
@@ -95,7 +110,7 @@ class ImageFrame extends JFrame
 						actor_click = true;
 						
 					}
-				}
+				}*/
 				if (!actor_click)
 					drawFence(x,y);
 					
@@ -153,7 +168,16 @@ class ImageFrame extends JFrame
 				{
 					System.out.println("game over man");
 					//stop the timer
+					running = false;
+					playPause.setText("Game Over!");
 				}
+				active_bunnies_num = myMap.active_bunnies_num;
+				dead_bunnies_num   = myMap.dead_bunnies_num;
+				bunnies_left_num   = myMap.bunnies_left_num;
+				active_bunnies.setText("Bunnies in garden: " + active_bunnies_num);
+				dead_bunnies.setText("Bunnies lost: " + dead_bunnies_num);
+				bunnies_left.setText("Bunnies left: " + bunnies_left_num);
+				recent_events.setText("Events: \n");
 				
 			}
 		});
@@ -201,6 +225,12 @@ private void addMenu()
 				CELLSIZE = 32;
 			}
 		    //get the preferred probability
+			
+			//reset vars
+			active_bunnies.setText("0");
+			dead_bunnies.setText("0");
+			bunnies_left.setText("0");
+			
 			myMap = new map(size,CELLSIZE,stats);
 			initializedMap = true;
 			displayBufferedImage();
@@ -284,25 +314,29 @@ private void addMenu()
 	final JButton button = new JButton( "Start" );
 	 button.addActionListener( new ActionListener()
 	 {
-		 @SuppressWarnings("deprecation")
 		public void actionPerformed( ActionEvent event )
 		 {
 			 running = !running;
 			 JButton src = (JButton)event.getSource();
 			 if (running)
 			 {
-				 src.setLabel("Pause");
+				 src.setText("Pause");
 				 timer.start();
 			 }
 			 else
 			 {
-				 src.setLabel("Start");
+				 src.setText("Start");
 				 timer.stop();
 			 }
 			 
 		 }
 	});
 	button.setPreferredSize(new Dimension(150,25)); 
+	playPause = button;
+	
+	//LEFT SIDE
+	
+	
 	
 	final JLabel Fight = new JLabel( "Fight" );
 	final JLabel Flight = new JLabel( "Flight" );
@@ -385,15 +419,35 @@ private void addMenu()
 	lowerPanel.add(button);
 	leftPanel = new JPanel();
 	
-	leftPanel.add(slider);
 	leftPanel.add(Fight);
-	leftPanel.add(slider2);
+	leftPanel.add(slider);
 	leftPanel.add(Flight);
-	leftPanel.add(slider3);
+	leftPanel.add(slider2);
 	leftPanel.add(Hunger);
-	leftPanel.add(slider4);
+	leftPanel.add(slider3);
 	leftPanel.add(Courage);
+	leftPanel.add(slider4);
+	
+	JLabel active_bunnies = new JLabel();
+	JLabel dead_bunnies = new JLabel();
+	JLabel bunnies_left = new JLabel();
+	JLabel recent_events = new JLabel();
+	this.active_bunnies = active_bunnies;
+	this.dead_bunnies = dead_bunnies;
+	this.bunnies_left = bunnies_left;
+	this.recent_events = recent_events;
+	leftPanel.add(active_bunnies);
+	leftPanel.add(dead_bunnies);
+	leftPanel.add(bunnies_left);
+	leftPanel.add(recent_events);
+	
+	active_bunnies.setText("Bunnies in garden: ");
+	dead_bunnies.setText("Bunnies lost: ");
+	bunnies_left.setText("Bunnies left: ");
+	recent_events.setText("Events: \n");
+	
 	leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.PAGE_AXIS));
+	
 	//leftPanel.setSize(new Dimension(50,100));
 	this.getContentPane().add( lowerPanel, BorderLayout.SOUTH );
 	

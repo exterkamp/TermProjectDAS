@@ -118,6 +118,16 @@ public class Home implements Actor {
 		int xReal = x * CELLSIZE;//CELLSIZE
 		int yReal = y * CELLSIZE;//CELLSIZE
 		g2d.fillRect(xReal+1, yReal+1, CELLSIZE-1, CELLSIZE-1);
+		long now = System.currentTimeMillis();
+		//if (children.size() == 0){}
+		int time = (int)(now - last_spawn_time_in_ms) / 1000;
+		//System.out.println("actual long: " + (now - last_spawn_time_in_ms));
+		//System.out.println(time);
+		//time is in ASCII 
+		char c = (char) ((spawn_time_in_ms/1000 - time) + 48);
+		char[] chars = {c};
+		g2d.setColor(Color.WHITE);
+		g2d.drawChars(chars, 0, 1, xReal+CELLSIZE/2-4, yReal+CELLSIZE/2);
 		//System.out.println(children.toString());
 	}
 

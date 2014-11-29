@@ -158,11 +158,15 @@ public class Fox implements Actor {
 						Point2D pp = path.peek();
 						if((int)pp.getX() >= minX && (int)pp.getX() <= maxX && (int)pp.getY() >= minY && (int)pp.getY() <= maxY)
 							path.pop();
-						if (path.size() > 1)
+						
+						if (rand.nextDouble() > 0.9)
 						{
-							pp = path.peek();
-							if((int)pp.getX() >= minX && (int)pp.getX() <= maxX && (int)pp.getY() >= minY && (int)pp.getY() <= maxY)
-								path.pop();
+							if (path.size() > 1)
+							{
+								pp = path.peek();
+								if((int)pp.getX() >= minX && (int)pp.getX() <= maxX && (int)pp.getY() >= minY && (int)pp.getY() <= maxY)
+									path.pop();
+							}
 						}
 					}
 					Point2D p = path.pop();

@@ -26,6 +26,10 @@ public class map {
 	int plant_avg_x, plant_avg_y;    //the average location of the remaining plants
 	mapNode[][] nodes;               //the map object in node form
 	
+	//statistics
+	int active_bunnies_num = 0;
+	int dead_bunnies_num   = 0;
+	int bunnies_left_num   = 0;
 	
 	
 
@@ -283,6 +287,8 @@ public class map {
 		//render!
 		
 		render();
+		
+		generateStastics();
 	}
 	
 	public void render()
@@ -461,6 +467,31 @@ public class map {
 		//System.out.println("Average plant location: " + "(" + plant_avg_x + " , " + plant_avg_y + ")");
 	}
 	
+	public void generateStastics()
+	{
+		//int agg = 0;
+		int active = 0;
+		int murders = 0;
+		//recall all bunnies from HOMES
+		for (Actor a : actors)
+		{
+			//if it is a home
+			if (a.getTYPE() == actorTYPE.HOME)
+			{
+				//aggregate the number of bunnies they made
+				//agg += ((Home)a).number_of_bunnies_spawned;
+				active += ((Home)a).children.size();
+			}
+			else if (a.getTYPE() == actorTYPE.FOX)
+			{
+				//if its a fox, see how many it murdered
+				murders += ((Fox)a).murders;
+			}
+		}		
+		active_bunnies_num = active;
+		dead_bunnies_num   = murders;
+		bunnies_left_num   = 100 - murders;
+	}
 	
 	
 	
