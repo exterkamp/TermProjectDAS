@@ -51,10 +51,15 @@ class ImageFrame extends JFrame
 	
 	//component references
 	JButton playPause;
+	JLabel current_stats;
 	JLabel active_bunnies;
 	JLabel dead_bunnies;
 	JLabel bunnies_left;
 	JLabel recent_events;
+	
+	//max number of abilities selectable
+	int max_abilities = 20;
+	int cur_abilities = 0;
 	
 	int active_bunnies_num = 0;
 	int dead_bunnies_num   = 0;
@@ -337,7 +342,7 @@ private void addMenu()
 	//LEFT SIDE
 	
 	
-	
+	final JLabel Stats = new JLabel( "Points Left: 20");
 	final JLabel Fight = new JLabel( "Fight" );
 	final JLabel Flight = new JLabel( "Flight" );
 	final JLabel Hunger = new JLabel( "Hunger" );
@@ -353,9 +358,23 @@ private void addMenu()
       public void stateChanged(ChangeEvent changeEvent) {
     	  JSlider theSlider = (JSlider) changeEvent.getSource();
           if (!theSlider.getValueIsAdjusting()) {
-            Fight.setText("Fight = " + new Integer(theSlider.getValue()));
-            myMap.changeStat(1, new Integer(theSlider.getValue()));
-            stats[0] = new Integer(theSlider.getValue());
+        	if ((cur_abilities - stats[0] + theSlider.getValue()) <= max_abilities)  
+        	{
+        		//normal, all good
+        		cur_abilities -= stats[0];
+        		cur_abilities += theSlider.getValue();
+        		Fight.setText("Fight = " + new Integer(theSlider.getValue()));
+        		myMap.changeStat(1, new Integer(theSlider.getValue()));
+        		stats[0] = new Integer(theSlider.getValue());
+        	}
+        	else
+        	{
+        		//check yourself, you are greater than the max!
+        		theSlider.setValue(max_abilities - cur_abilities);
+        		//cur_abilities = max_abilities;
+        	}
+        	//System.out.println(cur_abilities);
+        	Stats.setText("Points left: " + (max_abilities-cur_abilities));
           }
       }
     };
@@ -370,9 +389,25 @@ private void addMenu()
       public void stateChanged(ChangeEvent changeEvent) {
     	  JSlider theSlider = (JSlider) changeEvent.getSource();
           if (!theSlider.getValueIsAdjusting()) {
-            Flight.setText("Flight = " + new Integer(theSlider.getValue()));
-            myMap.changeStat(2, new Integer(theSlider.getValue()));
-            stats[1] = new Integer(theSlider.getValue());
+        	  
+        	if ((cur_abilities - stats[1] + theSlider.getValue()) <= max_abilities)  
+          	{
+          		//normal, all good
+        		cur_abilities -= stats[1];
+          		cur_abilities += theSlider.getValue();  
+          		Flight.setText("Flight = " + new Integer(theSlider.getValue()));
+          		myMap.changeStat(2, new Integer(theSlider.getValue()));
+          		stats[1] = new Integer(theSlider.getValue());
+          	}
+        	else
+        	{
+        		//check yourself, you are greater than the max!
+        		theSlider.setValue(max_abilities - cur_abilities);
+        		//cur_abilities = max_abilities;
+        		
+        	}
+        	//System.out.println(cur_abilities);
+        	Stats.setText("Points left: " + (max_abilities-cur_abilities));
           }
       }
     };
@@ -387,9 +422,25 @@ private void addMenu()
       public void stateChanged(ChangeEvent changeEvent) {
     	  JSlider theSlider = (JSlider) changeEvent.getSource();
           if (!theSlider.getValueIsAdjusting()) {
-            Hunger.setText("Hunger = " + new Integer(theSlider.getValue()));
-            myMap.changeStat(3, new Integer(theSlider.getValue()));
-            stats[2] = new Integer(theSlider.getValue());
+        	  
+        	if ((cur_abilities - stats[2] + theSlider.getValue()) <= max_abilities)  
+          	{
+          		//normal, all good
+        		cur_abilities -= stats[2];
+          		cur_abilities += theSlider.getValue();  
+          		Hunger.setText("Hunger = " + new Integer(theSlider.getValue()));
+          		myMap.changeStat(3, new Integer(theSlider.getValue()));
+          		stats[2] = new Integer(theSlider.getValue());
+          	}
+        	else
+        	{
+        		//check yourself, you are greater than the max!
+        		theSlider.setValue(max_abilities - cur_abilities);
+        		//cur_abilities = max_abilities;
+        		
+        	}
+        	//System.out.println(cur_abilities);
+        	Stats.setText("Points left: " + (max_abilities-cur_abilities));
           }
       }
     };
@@ -404,9 +455,24 @@ private void addMenu()
       public void stateChanged(ChangeEvent changeEvent) {
     	  JSlider theSlider = (JSlider) changeEvent.getSource();
           if (!theSlider.getValueIsAdjusting()) {
-            Courage.setText("Courage = " + new Integer(theSlider.getValue()));
-            myMap.changeStat(4, new Integer(theSlider.getValue()));
-            stats[3] = new Integer(theSlider.getValue());
+        	if ((cur_abilities - stats[3] + theSlider.getValue()) <= max_abilities)  
+            {
+            	//normal, all good
+        		cur_abilities -= stats[3];
+            	cur_abilities += theSlider.getValue();    
+            	Courage.setText("Courage = " + new Integer(theSlider.getValue()));
+            	myMap.changeStat(4, new Integer(theSlider.getValue()));
+            	stats[3] = new Integer(theSlider.getValue());
+            }
+        	else
+        	{
+        		//check yourself, you are greater than the max!
+        		theSlider.setValue(max_abilities - cur_abilities);
+        		//cur_abilities = max_abilities;
+        		
+        	}
+        	//System.out.println(cur_abilities);
+        	Stats.setText("Points left: " + (max_abilities-cur_abilities));
           }
       }
     };
@@ -418,6 +484,8 @@ private void addMenu()
 	lowerPanel = new JPanel();
 	lowerPanel.add(button);
 	leftPanel = new JPanel();
+	
+	leftPanel.add(Stats);
 	
 	leftPanel.add(Fight);
 	leftPanel.add(slider);
