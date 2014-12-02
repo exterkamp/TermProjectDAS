@@ -204,6 +204,7 @@ private void addMenu()
 {
 	JMenu fileMenu = new JMenu("File");
 	JMenu overlayMenu = new JMenu("Overlays");
+	JMenu diffMenu = new JMenu("Difficulty");
 	
 	JMenuItem make = new JMenuItem("Make simulation Field");
 	final ImageFrame f = this;
@@ -313,6 +314,44 @@ private void addMenu()
 		}
 	});
 	overlayMenu.add(overlayItem1);
+	JMenuItem easyItem = new JMenuItem("Easy");
+	easyItem.addActionListener(new ActionListener()
+	{
+		public void actionPerformed(ActionEvent event)
+		{
+			//make an easy map
+			myMap.cleanMap();
+			myMap.setEasy();
+			displayBufferedImage();
+		}
+	});
+	diffMenu.add(easyItem);
+	JMenuItem medItem = new JMenuItem("Medium");
+	medItem.addActionListener(new ActionListener()
+	{
+		public void actionPerformed(ActionEvent event)
+		{
+			//make a medium map
+			myMap.cleanMap();
+			myMap.setMedium();
+			displayBufferedImage();
+		}
+	});
+	diffMenu.add(medItem);
+	JMenuItem hardItem = new JMenuItem("Hard");
+	hardItem.addActionListener(new ActionListener()
+	{
+		public void actionPerformed(ActionEvent event)
+		{
+			//make a hard map
+			myMap.cleanMap();
+			myMap.setHard();
+			displayBufferedImage();
+		}
+	});
+	diffMenu.add(hardItem);
+	
+	
 	
 	
 	
@@ -325,8 +364,11 @@ private void addMenu()
 			 JButton src = (JButton)event.getSource();
 			 if (running)
 			 {
-				 src.setText("Pause");
-				 timer.start();
+				 if (myMap.difficulty_enabled)
+				 {
+					 src.setText("Pause");
+				 	timer.start();
+				 }
 			 }
 			 else
 			 {
@@ -481,6 +523,7 @@ private void addMenu()
 	JMenuBar menuBar = new JMenuBar();
 	menuBar.add(fileMenu);
 	menuBar.add(overlayMenu);
+	menuBar.add(diffMenu);
 	lowerPanel = new JPanel();
 	lowerPanel.add(button);
 	leftPanel = new JPanel();

@@ -347,9 +347,9 @@ public class Fox implements Actor {
 		int yReal = y * CELLSIZE;//CELLSIZE
 		g2d.fillRect(xReal+1, yReal+1, CELLSIZE-1, CELLSIZE-1);
 		
-		g2d.setColor(new Color(100,100,0,50));//orange
-		g2d.fillRect((CELLSIZE*minX)+1, (CELLSIZE*minY)+1, (CELLSIZE*(maxX-minX))-1, (CELLSIZE*(maxY-minY))-1);
-		if (path != null && path.size() > 0)
+		//g2d.setColor(new Color(100,100,0,50));//orange
+		//g2d.fillRect((CELLSIZE*minX)+1, (CELLSIZE*minY)+1, (CELLSIZE*(maxX-minX))-1, (CELLSIZE*(maxY-minY))-1);
+		/*if (path != null && path.size() > 0)
 		{
 			Color[] cols = new Color[path.size()];
 			int red = 255;
@@ -373,7 +373,7 @@ public class Fox implements Actor {
 				old = p;
 				
 			}
-		}
+		}*/
 	}
 
 	@Override

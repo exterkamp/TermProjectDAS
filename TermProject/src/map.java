@@ -1,5 +1,5 @@
 import java.awt.Graphics2D;
-import java.awt.geom.Point2D;
+//import java.awt.geom.Point2D;
 import java.awt.image.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -25,6 +25,8 @@ public class map {
 	int courage;					 //amount of courage
 	int plant_avg_x, plant_avg_y;    //the average location of the remaining plants
 	mapNode[][] nodes;               //the map object in node form
+	boolean difficulty_enabled;      //if the difficulty has been selected
+	
 	
 	//statistics
 	int active_bunnies_num = 0;
@@ -35,6 +37,7 @@ public class map {
 
 	public map(int sizeIn, int CELLSIZE, int[] stats)//400 = 25x25, 800 = 50x50
 	{
+		difficulty_enabled = false;
 		//set the overlay and size
 		overlay = 0;
 		this.CELLSIZE = CELLSIZE;
@@ -104,7 +107,7 @@ public class map {
 		Actor testHomeSW = new Home(0,24,4);
 		Actor testHomeSE = new Home(24,24,4);
 		
-		Actor testFoodContainer = new FoodContainer();
+		/*Actor testFoodContainer = new FoodContainer();
 		//make food container!
 		//make pattern of plants
 				for (int j = 7;j < 18; j+=2)
@@ -126,20 +129,20 @@ public class map {
 		
 		
 		actors.add(testFoodContainer);
-		((FoodContainer)testFoodContainer).init(this,nodes);
+		((FoodContainer)testFoodContainer).init(this,nodes);*/
 		//add homes and fox to actors list and the nodes
 		actors.add(testHomeNW);
 		nodes[testHomeNW.getXY()[0]][testHomeNW.getXY()[1]].children.add(testHomeNW);
 		actors.add(testHomeNE);
-		nodes[testHomeNW.getXY()[0]][testHomeNW.getXY()[1]].children.add(testHomeNE);
+		nodes[testHomeNE.getXY()[0]][testHomeNE.getXY()[1]].children.add(testHomeNE);
 		actors.add(testHomeSW);
-		nodes[testHomeNW.getXY()[0]][testHomeNW.getXY()[1]].children.add(testHomeSW);
+		nodes[testHomeSW.getXY()[0]][testHomeSW.getXY()[1]].children.add(testHomeSW);
 		actors.add(testHomeSE);
-		nodes[testHomeNW.getXY()[0]][testHomeNW.getXY()[1]].children.add(testHomeSE);
-		actors.add(testFox);
+		nodes[testHomeSE.getXY()[0]][testHomeSE.getXY()[1]].children.add(testHomeSE);
+		/*actors.add(testFox);
 		nodes[testFox.getXY()[0]][testFox.getXY()[1]].children.add(testFox);
 		actors.add(testFox2);
-		nodes[testFox2.getXY()[0]][testFox2.getXY()[1]].children.add(testFox2);
+		nodes[testFox2.getXY()[0]][testFox2.getXY()[1]].children.add(testFox2);*/
 		//((Home)testHomeNW).active = false;
 		//((Home)testHomeNE).active = false;
 		//((Home)testHomeSW).active = false;
@@ -336,6 +339,7 @@ public class map {
 			actors.add(act);
 			nodes[act.getXY()[0]][act.getXY()[1]].children.add(act);
 			render();
+			//System.out.println("placed at: " + x + "," + y);
 			return true;
 		}
 		return false;
@@ -493,6 +497,250 @@ public class map {
 		bunnies_left_num   = 100 - murders;
 	}
 	
+	public void setEasy()
+	{
+		//
+		Actor testFoodContainer = new FoodContainer();
+		//make food container!
+		//make pattern of plants
+				for (int j = 7;j < 18; j+=3)
+				{
+					for (int i = 7; i < 18; i+=3)
+					{
+						Food testFoodTemp = new Food(j,i);
+						((FoodContainer)testFoodContainer).children.add(testFoodTemp);
+						//nodes[j][i].children.add(testFoodTemp);
+					}
+				}
+		
+		//make fox
+		//Actor testFox = new Fox(12,15,7,18,13,18);
+		//Actor testFox2 = new Fox(12,9,7,18,7,12);
+		//Actor testFox = new Fox(12,15,6,19,12,19);
+		Actor testFox2 = new Fox(12,12,6,19,6,19);
+		//Actor testFox2 = new Fox(12,13);
+		
+		
+		actors.add(testFoodContainer);
+		((FoodContainer)testFoodContainer).init(this,nodes);
+		//add homes and fox to actors list and the nodes
+		//actors.add(testFox);
+		//nodes[testFox.getXY()[0]][testFox.getXY()[1]].children.add(testFox);
+		actors.add(testFox2);
+		nodes[testFox2.getXY()[0]][testFox2.getXY()[1]].children.add(testFox2);
+		
+		//Add fences
+		for(int x = 5; x < 8;x++)
+		{
+			this.addActor(x, 5, actorTYPE.FENCE);
+			this.addActor(x, 19, actorTYPE.FENCE);
+		}
+		for(int x = 17; x < 20;x++)
+		{
+			this.addActor(x, 5, actorTYPE.FENCE);
+			this.addActor(x, 19, actorTYPE.FENCE);
+		}
+		for(int y = 6; y < 8;y++)
+		{
+			this.addActor(5, y, actorTYPE.FENCE);
+			this.addActor(19, y, actorTYPE.FENCE);
+		}
+		for(int y = 17; y < 19;y++)
+		{
+			this.addActor(5, y, actorTYPE.FENCE);
+			this.addActor(19, y, actorTYPE.FENCE);
+		}
+		render();
+		//System.out.println("setting up medium");
+		difficulty_enabled = true;
+	}
 	
+	public void setMedium()
+	{
+		//
+		Actor testFoodContainer = new FoodContainer();
+		//make food container!
+		//make pattern of plants
+				for (int j = 7;j < 18; j+=2)
+				{
+					for (int i = 7; i < 18; i+=2)
+					{
+						Food testFoodTemp = new Food(j,i);
+						((FoodContainer)testFoodContainer).children.add(testFoodTemp);
+						//nodes[j][i].children.add(testFoodTemp);
+					}
+				}
+		
+		//make fox
+		//Actor testFox = new Fox(12,15,7,18,13,18);
+		//Actor testFox2 = new Fox(12,9,7,18,7,12);
+		Actor testFox = new Fox(12,15,6,19,12,19);
+		Actor testFox2 = new Fox(12,9,6,19,6,13);
+		//Actor testFox2 = new Fox(12,13);
+		
+		
+		actors.add(testFoodContainer);
+		((FoodContainer)testFoodContainer).init(this,nodes);
+		//add homes and fox to actors list and the nodes
+		actors.add(testFox);
+		nodes[testFox.getXY()[0]][testFox.getXY()[1]].children.add(testFox);
+		actors.add(testFox2);
+		nodes[testFox2.getXY()[0]][testFox2.getXY()[1]].children.add(testFox2);
+		
+		//Add fences
+		for(int x = 5; x < 9;x++)
+		{
+			this.addActor(x, 5, actorTYPE.FENCE);
+			this.addActor(x, 19, actorTYPE.FENCE);
+		}
+		for(int x = 16; x < 20;x++)
+		{
+			this.addActor(x, 5, actorTYPE.FENCE);
+			this.addActor(x, 19, actorTYPE.FENCE);
+		}
+		for(int y = 6; y < 9;y++)
+		{
+			this.addActor(5, y, actorTYPE.FENCE);
+			this.addActor(19, y, actorTYPE.FENCE);
+		}
+		for(int y = 16; y < 19;y++)
+		{
+			this.addActor(5, y, actorTYPE.FENCE);
+			this.addActor(19, y, actorTYPE.FENCE);
+		}
+		for (int y = 11;y < 14;y++)
+		{
+			this.addActor(5, y, actorTYPE.FENCE);
+			this.addActor(19, y, actorTYPE.FENCE);
+		}
+		
+		render();
+		//System.out.println("setting up medium");
+		difficulty_enabled = true;
+	}
+	
+	public void setHard()
+	{
+		//
+		//
+		Actor testFoodContainer = new FoodContainer();
+		//make food container!
+		//make pattern of plants
+				for (int j = 7;j < 18; j+=2)
+				{
+					for (int i = 7; i < 18; i+=1)
+					{
+						Food testFoodTemp = new Food(j,i);
+						((FoodContainer)testFoodContainer).children.add(testFoodTemp);
+						//nodes[j][i].children.add(testFoodTemp);
+					}
+				}
+		
+		//make fox
+		//Actor testFox = new Fox(12,15,7,18,13,18);
+		//Actor testFox2 = new Fox(12,9,7,18,7,12);
+		Actor testFox = new Fox(12,15,6,19,12,19);
+		Actor testFox2 = new Fox(12,9,6,19,6,13);
+		Actor testFox3 = new Fox(12,12,6,19,6,19);
+		//Actor testFox2 = new Fox(12,13);
+		
+		
+		actors.add(testFoodContainer);
+		((FoodContainer)testFoodContainer).init(this,nodes);
+		//add homes and fox to actors list and the nodes
+		actors.add(testFox);
+		nodes[testFox.getXY()[0]][testFox.getXY()[1]].children.add(testFox);
+		actors.add(testFox2);
+		nodes[testFox2.getXY()[0]][testFox2.getXY()[1]].children.add(testFox2);
+		actors.add(testFox3);
+		nodes[testFox3.getXY()[0]][testFox3.getXY()[1]].children.add(testFox3);
+		//Add fences
+		for(int x = 5; x < 9;x++)
+		{
+			this.addActor(x, 5, actorTYPE.FENCE);
+			this.addActor(x, 19, actorTYPE.FENCE);
+		}
+		for(int x = 16; x < 20;x++)
+		{
+			this.addActor(x, 5, actorTYPE.FENCE);
+			this.addActor(x, 19, actorTYPE.FENCE);
+		}
+		for(int y = 6; y < 9;y++)
+		{
+			this.addActor(5, y, actorTYPE.FENCE);
+			this.addActor(19, y, actorTYPE.FENCE);
+		}
+		for(int y = 16; y < 19;y++)
+		{
+			this.addActor(5, y, actorTYPE.FENCE);
+			this.addActor(19, y, actorTYPE.FENCE);
+		}
+		for (int y = 11;y < 14;y++)
+		{
+			this.addActor(5, y, actorTYPE.FENCE);
+			this.addActor(19, y, actorTYPE.FENCE);
+		}
+		for (int x = 11;x < 14;x++)
+		{
+			this.addActor(x, 5, actorTYPE.FENCE);
+			this.addActor(x, 19, actorTYPE.FENCE);
+		}
+		
+		
+		render();
+		//System.out.println("setting up medium");
+		difficulty_enabled = true;
+	}
+	
+	public void cleanMap()
+	{
+		System.out.println("cleaning");
+		System.out.println("number of actors in list: " + actors.size());
+		int count = 0;
+		for (int row = 0;row < 25;row++)
+		{
+			for (int col = 0;col < 25;col++)
+			{
+				if (nodes[row][col].children.size() != 0)
+					count++;
+			}
+		}
+		System.out.println("number of actors in nodes: " + count);
+		
+		for (final java.util.Iterator<Actor> iterator = actors.iterator(); iterator.hasNext(); )
+		{
+			Actor a = iterator.next();
+			if (a.getTYPE() == actorTYPE.FENCE || a.getTYPE() == actorTYPE.FOX)
+			{
+				nodes[a.getXY()[0]][a.getXY()[1]].children.remove(a);
+				iterator.remove();
+			}
+			if (a.getTYPE() == actorTYPE.CONTAINER)
+			{
+				for (Food f : ((FoodContainer)a).children)
+				{
+					nodes[f.getXY()[0]][f.getXY()[1]].children.remove(f);
+					f.die();
+				}
+				iterator.remove();
+			}
+		}
+		System.out.println("after clean:");
+		System.out.println("number of actors in list: " + actors.size());
+		count = 0;
+		for (int row = 0;row < 25;row++)
+		{
+			for (int col = 0;col < 25;col++)
+			{
+				if (nodes[row][col].children.size() > 0 )
+				{
+					System.out.print(row + "," + col);
+					count++;
+				}
+			}
+		}
+		System.out.println("\nnumber of actors in nodes: " + count);
+		
+	}
 	
 }
