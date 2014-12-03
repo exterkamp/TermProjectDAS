@@ -1,9 +1,16 @@
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Stack;
+
+import javax.imageio.ImageIO;
+
+
 
 
 
@@ -17,6 +24,10 @@ public class Fox implements Actor {
 	public enum state {LOOKING, HUNTING, GUARDING, EATING, SLOWED};
 	//the current state
 	state currentState;
+	
+	//directionlal enum
+		public enum direction {NW,N,NE,E,SE,S,SW,W};
+		direction currentDirection;
 	//the current path
 	Stack<Point2D> path;
 	boolean pathing;
@@ -41,6 +52,7 @@ public class Fox implements Actor {
 		this.x = x;
 		this.y = y;
 		currentState = state.LOOKING;
+		currentDirection = direction.N;
 		path = null;
 		pathing = false;
 		target = null;
@@ -307,6 +319,50 @@ public class Fox implements Actor {
 		{
 			Map.nodes[tempX][tempY].children.remove(this);//remove old
 			Map.nodes[x][y].children.add(this);//add new
+			
+			//figure out the direction
+			if (x > tempX)//EAST
+			{
+				if(y < tempY)//NORTH-EAST
+				{
+					currentDirection = direction.NE;
+				}
+				else if(y > tempY)//SOUTH-EAST
+				{
+					currentDirection = direction.SE;
+				}
+				else//EAST
+				{
+					currentDirection = direction.E;
+				}
+			}
+			else if (x < tempX)//WEST
+			{
+				if(y < tempY)//NORTH-WEST
+				{
+					currentDirection = direction.NW;
+				}
+				else if (y > tempY)//SOUTH-WEST
+				{
+					currentDirection = direction.SW;
+				}
+				else
+				{
+					currentDirection = direction.W;
+				}
+			}
+			else//NO X DIFF
+			{
+				if(y < tempY)//NORTH
+				{
+					currentDirection = direction.N;
+				}
+				else if (y > tempY)//SOUTH
+				{
+					currentDirection = direction.S;
+				}
+			}
+			
 		}
 	}
 
@@ -340,13 +396,63 @@ public class Fox implements Actor {
 			g2d.setColor(new Color(0xFF6655dd));//washout blue
 			break;
 		default:
-			g2d.setColor(new Color(0xFFe3482d));//orange
+			g2d.setColor(Color.YELLOW);//orange
 			break;
 		}
 		
 		int xReal = x * CELLSIZE;//CELLSIZE
 		int yReal = y * CELLSIZE;//CELLSIZE
-		g2d.fillRect(xReal+1, yReal+1, CELLSIZE-1, CELLSIZE-1);
+		//g2d.fillRect(xReal+1, yReal+1, CELLSIZE-1, CELLSIZE-1);
+		g2d.fillRect(xReal+1 + (3*CELLSIZE/8), yReal+1-(CELLSIZE/4), CELLSIZE/4, CELLSIZE/4);
+		//int xReal = x * CELLSIZE;//CELLSIZE
+		//int yReal = y * CELLSIZE;//CELLSIZE
+		//g2d.fillRect(xReal+1, yReal+1, CELLSIZE-1, CELLSIZE-1);
+		String filepath = "src/images/F_";
+		String filename = "";
+		BufferedImage img = null;
+		switch (currentDirection)
+		{
+			case NW:
+				filename = "NW";
+				break;
+			case N:
+				filename = "N";
+				break;
+			case NE:
+				filename = "NE";
+				break;
+			case E:
+				filename = "E";
+				break;
+			case SE:
+				filename = "SE";
+				break;
+			case S:
+				filename = "S";
+				break;
+			case SW:
+				filename = "SW";
+				break;
+			case W:
+				filename = "W";
+				break;
+			default:
+				filename = "N";
+				break;
+		}
+		filepath = filepath + "" + filename;
+		filepath = filepath + ".png";
+		
+		try {
+		    img = ImageIO.read(new File(filepath));
+		} catch (IOException e) {
+		}
+		//g2d.drawImage(img, xReal, yReal, width, height, observer)
+		//g2d.drawImage(img, BufferedImageOp.class, xReal, yReal);
+		g2d.drawImage(img, xReal+1, yReal+1, xReal + CELLSIZE, yReal + CELLSIZE, 0, 0, 24, 24, null);
+		
+		
+		
 		
 		//g2d.setColor(new Color(100,100,0,50));//orange
 		//g2d.fillRect((CELLSIZE*minX)+1, (CELLSIZE*minY)+1, (CELLSIZE*(maxX-minX))-1, (CELLSIZE*(maxY-minY))-1);
