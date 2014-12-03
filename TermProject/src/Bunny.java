@@ -343,42 +343,51 @@ public class Bunny implements Actor {
 			
 			//make path
 			//System.out.println("going home!");
-			if (!pathing && !(x == 0 && y == 0))//if not pathing and not home
+			if ((x == home.x && y == home.y))
 			{
-				//Astar a= new Astar();
-				//change 0,0 to the bunny home in future code
-				path = stahr.pathfindBreadthFirst(new Point2D.Double(x,y), new Point2D.Double(home.x,home.y), Map);
-				if (path != null)
+				die();
+			}
+			else
+			{
+				if (!pathing)// && !(x == home.x && y == home.y))//if not pathing and not home
 				{
-					pathing = true;
+					//Astar a= new Astar();
+					//change 0,0 to the bunny home in future code
+					path = stahr.pathfindBreadthFirst(new Point2D.Double(x,y), new Point2D.Double(home.x,home.y), Map);
+					if (path != null)
+					{
+						pathing = true;
+					}
+				}
+				else
+				//if(pathing)
+				{
+					
+					if (!path.isEmpty())
+					{
+						Point2D p = path.pop();
+						x = (int)p.getX();
+						y = (int)p.getY();
+						
+					}
+					else if(full == true)
+					{
+						//drop off food @ the home
+						//this prevents the food from being REPLACED when it gets home
+						full = false;
+						//make food die as well?
+						
+						this.food.die();
+						die();
+					}
+					else
+					{
+						die();
+					}
 				}
 			}
 			
-			if(pathing)
-			{
-				
-				if (!path.isEmpty())
-				{
-					Point2D p = path.pop();
-					x = (int)p.getX();
-					y = (int)p.getY();
-					
-				}
-				else if(full == true)
-				{
-					//drop off food @ the home
-					//this prevents the food from being REPLACED when it gets home
-					full = false;
-					//make food die as well?
-					
-					this.food.die();
-					die();
-				}
-				else
-				{
-					die();
-				}
-			}
+			
 			break;
 		case RUNNING_AWAY:	
 			//RUN AWAY REGULAR

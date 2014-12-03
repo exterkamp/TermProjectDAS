@@ -49,6 +49,8 @@ class ImageFrame extends JFrame
 	int CELLSIZE;
 	int stats[];
 	public enum status {BEGINNING, INITIALIZED, RUNNING, PAUSED, GAME_OVER};
+	String win_state;
+	
 	status curStatus;
 	
 	
@@ -71,6 +73,7 @@ class ImageFrame extends JFrame
 	
 	public ImageFrame(int choice)
 	{
+		win_state = "";
 		curStatus = status.BEGINNING;
 		//make the new map
 		int size = 0;
@@ -191,7 +194,23 @@ class ImageFrame extends JFrame
 					//stop the timer
 					//running = false;
 					curStatus = status.GAME_OVER;
-					
+					int food = 0;
+					for (Actor a : myMap.actors)
+					{
+						if (a.getTYPE() == actorTYPE.CONTAINER)
+						{
+							for (@SuppressWarnings("unused") Food f : ((FoodContainer)a).children)
+							{
+								food++;
+							}
+						}
+					}
+					if (food == 0)
+						win_state = "YOU'VE CLEARED THE GARDEN!  GOOD JOB! - YOU WON!";
+					else
+						win_state = "YOU'VE LOST TOO MANY RABBITS!  YOU DIDN'T CLEAR THE GARDEN!";
+					//System.out.println(win_state);
+					JOptionPane.showMessageDialog(Picframe,win_state,"Simulation Terminated",JOptionPane.PLAIN_MESSAGE);
 					playPause.setText("Game Over!");
 					playPause.setEnabled(false);
 				}
@@ -264,6 +283,7 @@ private void addMenu()
 			f.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
 			curStatus = status.BEGINNING;
 			playPause.setEnabled(false);
+			playPause.setText("Start");
 			timer.stop();
 		}
 	});

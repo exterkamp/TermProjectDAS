@@ -495,7 +495,7 @@ public class map {
 		}		
 		active_bunnies_num = active;
 		dead_bunnies_num   = murders;
-		bunnies_left_num   = max_bunnies - murders;
+		bunnies_left_num   = ((max_bunnies - murders) > 0) ? (max_bunnies - murders) : 0;
 	}
 	
 	public void setEasy()
@@ -701,9 +701,9 @@ public class map {
 	
 	public void cleanMap()
 	{
-		System.out.println("cleaning");
-		System.out.println("number of actors in list: " + actors.size());
-		int count = 0;
+		//System.out.println("cleaning");
+		//System.out.println("number of actors in list: " + actors.size());
+		/*int count = 0;
 		for (int row = 0;row < 25;row++)
 		{
 			for (int col = 0;col < 25;col++)
@@ -711,8 +711,8 @@ public class map {
 				if (nodes[row][col].children.size() != 0)
 					count++;
 			}
-		}
-		System.out.println("number of actors in nodes: " + count);
+		}*/
+		//System.out.println("number of actors in nodes: " + count);
 		
 		for (final java.util.Iterator<Actor> iterator = actors.iterator(); iterator.hasNext(); )
 		{
@@ -732,7 +732,7 @@ public class map {
 				iterator.remove();
 			}
 		}
-		System.out.println("after clean:");
+		/*System.out.println("after clean:");
 		System.out.println("number of actors in list: " + actors.size());
 		count = 0;
 		for (int row = 0;row < 25;row++)
@@ -746,7 +746,7 @@ public class map {
 				}
 			}
 		}
-		System.out.println("\nnumber of actors in nodes: " + count);
+		System.out.println("\nnumber of actors in nodes: " + count);*/
 		
 	}
 	
