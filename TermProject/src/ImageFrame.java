@@ -42,12 +42,15 @@ class ImageFrame extends JFrame
 	JLabel label;
 	map myMap;
 	boolean initializedMap = false;
-	boolean running = false;
+	//boolean running = false;
 	private Timer timer;
 	JPanel lowerPanel;
 	JPanel leftPanel;
 	int CELLSIZE;
 	int stats[];
+	public enum status {BEGINNING, INITIALIZED, RUNNING, PAUSED, GAME_OVER};
+	status curStatus;
+	
 	
 	//component references
 	JButton playPause;
@@ -68,7 +71,7 @@ class ImageFrame extends JFrame
 	
 	public ImageFrame(int choice)
 	{
-		
+		curStatus = status.BEGINNING;
 		//make the new map
 		int size = 0;
 		if(choice == 0 ){
@@ -163,6 +166,19 @@ class ImageFrame extends JFrame
 				//if (!myMap.WINNER)
 				if (!myMap.GAME_OVER)
 				{
+					if (myMap.bunnies_left_num == 0)
+					{
+						//disable all homes
+						for (Actor a : myMap.actors)
+						{
+							if (a.getTYPE() == actorTYPE.HOME)
+							{
+								((Home)a).active = false;
+							}
+						}
+						//myMap.GAME_OVER = true;
+						
+					}
 					myMap.act();
 					// display the next frame
 					displayBufferedImage();
@@ -173,8 +189,11 @@ class ImageFrame extends JFrame
 				{
 					System.out.println("game over man");
 					//stop the timer
-					running = false;
+					//running = false;
+					curStatus = status.GAME_OVER;
+					
 					playPause.setText("Game Over!");
+					playPause.setEnabled(false);
 				}
 				active_bunnies_num = myMap.active_bunnies_num;
 				dead_bunnies_num   = myMap.dead_bunnies_num;
@@ -243,6 +262,9 @@ private void addMenu()
 			//f.setSize(myMap.getMap().getWidth()+45,myMap.getMap().getHeight()+lowerPanel.getHeight()+80);
 			f.getContentPane().add( leftPanel, BorderLayout.WEST );
 			f.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
+			curStatus = status.BEGINNING;
+			playPause.setEnabled(false);
+			timer.stop();
 		}
 	});
 	fileMenu.add(make);
@@ -319,10 +341,16 @@ private void addMenu()
 	{
 		public void actionPerformed(ActionEvent event)
 		{
-			//make an easy map
-			myMap.cleanMap();
-			myMap.setEasy();
-			displayBufferedImage();
+			if (curStatus == status.BEGINNING || curStatus == status.INITIALIZED)
+			{
+				//make an easy map
+				myMap.cleanMap();
+				myMap.setEasy();
+				displayBufferedImage();
+				curStatus = status.INITIALIZED;
+				playPause.setEnabled(true);
+
+			}
 		}
 	});
 	diffMenu.add(easyItem);
@@ -331,10 +359,16 @@ private void addMenu()
 	{
 		public void actionPerformed(ActionEvent event)
 		{
-			//make a medium map
-			myMap.cleanMap();
-			myMap.setMedium();
-			displayBufferedImage();
+			if (curStatus == status.BEGINNING || curStatus == status.INITIALIZED)
+			{
+				//make a medium map
+				myMap.cleanMap();
+				myMap.setMedium();
+				displayBufferedImage();
+				curStatus = status.INITIALIZED;
+				playPause.setEnabled(true);
+
+			}
 		}
 	});
 	diffMenu.add(medItem);
@@ -343,10 +377,15 @@ private void addMenu()
 	{
 		public void actionPerformed(ActionEvent event)
 		{
-			//make a hard map
-			myMap.cleanMap();
-			myMap.setHard();
-			displayBufferedImage();
+			if (curStatus == status.BEGINNING || curStatus == status.INITIALIZED)
+			{
+				//make a hard map
+				myMap.cleanMap();
+				myMap.setHard();
+				displayBufferedImage();
+				curStatus = status.INITIALIZED;
+				playPause.setEnabled(true);
+			}
 		}
 	});
 	diffMenu.add(hardItem);
@@ -360,27 +399,31 @@ private void addMenu()
 	 {
 		public void actionPerformed( ActionEvent event )
 		 {
-			 running = !running;
-			 JButton src = (JButton)event.getSource();
-			 if (running)
+			 //running = !running;
+			 if (curStatus != status.BEGINNING || curStatus != status.GAME_OVER)
 			 {
-				 if (myMap.difficulty_enabled)
+				 JButton src = (JButton)event.getSource();
+				 if (curStatus == status.INITIALIZED || curStatus == status.PAUSED )
 				 {
-					 src.setText("Pause");
-				 	timer.start();
+					 if (myMap.difficulty_enabled)
+					 {
+						 src.setText("Pause");
+					 	timer.start();
+					 	curStatus = status.RUNNING;
+					 }
+				 }
+				 else
+				 {
+					 src.setText("Start");
+					 timer.stop();
+					 curStatus = status.PAUSED;
 				 }
 			 }
-			 else
-			 {
-				 src.setText("Start");
-				 timer.stop();
-			 }
-			 
 		 }
 	});
 	button.setPreferredSize(new Dimension(150,25)); 
 	playPause = button;
-	
+	playPause.setEnabled(false);
 	//LEFT SIDE
 	
 	

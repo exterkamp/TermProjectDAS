@@ -203,10 +203,11 @@ public class Fox implements Actor {
 							//IM THE ONE
 							if (((Bunny)target).currentState == Bunny.state.FIGHTING)
 							{
-								slowed_duration = rand.nextInt(4);//duration is 3-5
+								int fight = ((Bunny)target).fight;
+								slowed_duration = rand.nextInt(fight);//duration is 
 								slowed_duration += 5;  
-								//0 -> 5
-								//4 -> 9
+								//1 -> 6
+								//10 -> 15
 								currentState = state.SLOWED;
 								//System.out.println(((Bunny)target).currentState);
 								

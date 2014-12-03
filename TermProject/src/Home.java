@@ -1,7 +1,12 @@
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import javax.imageio.ImageIO;
 
 
 
@@ -111,13 +116,22 @@ public class Home implements Actor {
 		{
 			b.render(g2d,CELLSIZE);
 		}
-		if (active)
-			g2d.setColor(Color.BLACK);          //black -> active home
-		else
-			g2d.setColor(new Color(0xFF651616));//not active, RED tinted black home
+		//
 		int xReal = x * CELLSIZE;//CELLSIZE
 		int yReal = y * CELLSIZE;//CELLSIZE
-		g2d.fillRect(xReal+1, yReal+1, CELLSIZE-1, CELLSIZE-1);
+		//g2d.fillRect(xReal+1, yReal+1, CELLSIZE-1, CELLSIZE-1);
+		
+		String filepath = "src/images/HOME.png";
+		BufferedImage img = null;
+		try {
+		    img = ImageIO.read(new File(filepath));
+		} catch (IOException e) {
+			
+		}
+		g2d.drawImage(img, xReal+1, yReal+1, xReal + CELLSIZE, yReal + CELLSIZE, 0, 0, 24, 24, null);
+		
+		
+		
 		long now = System.currentTimeMillis();
 		//if (children.size() == 0){}
 		int time = (int)(now - last_spawn_time_in_ms) / 1000;
@@ -126,7 +140,11 @@ public class Home implements Actor {
 		//time is in ASCII 
 		char c = (char) ((spawn_time_in_ms/1000 - time) + 48);
 		char[] chars = {c};
-		g2d.setColor(Color.WHITE);
+		//g2d.setColor(Color.WHITE);
+		if (active)
+			g2d.setColor(Color.WHITE);          //black -> active home
+		else
+			g2d.setColor(new Color(0xFF651616));//not active, RED tinted black home
 		g2d.drawChars(chars, 0, 1, xReal+CELLSIZE/2-4, yReal+CELLSIZE/2);
 		//System.out.println(children.toString());
 	}

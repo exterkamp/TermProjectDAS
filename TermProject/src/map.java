@@ -32,11 +32,12 @@ public class map {
 	int active_bunnies_num = 0;
 	int dead_bunnies_num   = 0;
 	int bunnies_left_num   = 0;
-	
+	int max_bunnies        = 0;
 	
 
 	public map(int sizeIn, int CELLSIZE, int[] stats)//400 = 25x25, 800 = 50x50
 	{
+		
 		difficulty_enabled = false;
 		//set the overlay and size
 		overlay = 0;
@@ -494,7 +495,7 @@ public class map {
 		}		
 		active_bunnies_num = active;
 		dead_bunnies_num   = murders;
-		bunnies_left_num   = 100 - murders;
+		bunnies_left_num   = max_bunnies - murders;
 	}
 	
 	public void setEasy()
@@ -552,6 +553,8 @@ public class map {
 		}
 		render();
 		//System.out.println("setting up medium");
+		max_bunnies = 10;
+		bunnies_left_num = max_bunnies;
 		difficulty_enabled = true;
 	}
 	
@@ -616,6 +619,8 @@ public class map {
 		
 		render();
 		//System.out.println("setting up medium");
+		max_bunnies = 75;
+		bunnies_left_num = max_bunnies;
 		difficulty_enabled = true;
 	}
 	
@@ -641,7 +646,7 @@ public class map {
 		//Actor testFox2 = new Fox(12,9,7,18,7,12);
 		Actor testFox = new Fox(12,15,6,19,12,19);
 		Actor testFox2 = new Fox(12,9,6,19,6,13);
-		Actor testFox3 = new Fox(12,12,6,19,6,19);
+		//Actor testFox3 = new Fox(12,12,6,19,6,19);
 		//Actor testFox2 = new Fox(12,13);
 		
 		
@@ -652,8 +657,8 @@ public class map {
 		nodes[testFox.getXY()[0]][testFox.getXY()[1]].children.add(testFox);
 		actors.add(testFox2);
 		nodes[testFox2.getXY()[0]][testFox2.getXY()[1]].children.add(testFox2);
-		actors.add(testFox3);
-		nodes[testFox3.getXY()[0]][testFox3.getXY()[1]].children.add(testFox3);
+		//actors.add(testFox3);
+		//nodes[testFox3.getXY()[0]][testFox3.getXY()[1]].children.add(testFox3);
 		//Add fences
 		for(int x = 5; x < 9;x++)
 		{
@@ -688,6 +693,8 @@ public class map {
 		
 		
 		render();
+		max_bunnies = 100;
+		bunnies_left_num = max_bunnies;
 		//System.out.println("setting up medium");
 		difficulty_enabled = true;
 	}
