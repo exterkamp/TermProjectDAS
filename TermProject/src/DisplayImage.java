@@ -21,6 +21,7 @@ public class DisplayImage {
 		//JPanel panel = new JPanel();
 		BufferedImage img = null;
 		try {
+			//System.out.println(System.getProperty("user.dir"));
 		    img = ImageIO.read(new File("src/images/Splash.png"));
 		} catch (IOException e) {
 		}

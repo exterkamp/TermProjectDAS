@@ -200,8 +200,8 @@ public class Astar {
 			}
 		}
 		//return failure
-		System.out.print("FAILURE TO PATH FROM: ");
-		System.out.println(start.toString() + " -> " + end.toString());
+		//System.out.print("FAILURE TO PATH FROM: ");
+		//System.out.println(start.toString() + " -> " + end.toString());
 		
 		//System.out.println(came_from[624]);
 		//System.out.println(came_from[623]);
@@ -278,9 +278,9 @@ public class Astar {
 			}
 		}
 		//return failure
-		System.out.print("FAILURE TO PATH FROM: ");
-		System.out.println(start.toString() + " -> " + end.toString());
-		System.out.println(" min: " + minX + "," + minY + " max: " + maxX + "," + maxY);
+		//System.out.print("FAILURE TO PATH FROM: ");
+		//System.out.println(start.toString() + " -> " + end.toString());
+		//System.out.println(" min: " + minX + "," + minY + " max: " + maxX + "," + maxY);
 		//System.out.println(came_from[624]);
 		//System.out.println(came_from[623]);
 		//System.out.println(came_from[599]);

@@ -26,6 +26,7 @@ public class map {
 	int plant_avg_x, plant_avg_y;    //the average location of the remaining plants
 	mapNode[][] nodes;               //the map object in node form
 	boolean difficulty_enabled;      //if the difficulty has been selected
+	boolean fences_burnt = false;	 //true if fences have been burnt into the BACKGROUND
 	
 	
 	//statistics
@@ -302,7 +303,11 @@ public class map {
 		//go through all the actors and render them
 		for (Actor a : actors)
 		{
-			a.render(g2d, CELLSIZE);
+			if (a.getTYPE() != actorTYPE.FENCE || !fences_burnt)
+			{
+				//System.out.println(a.toString());
+				a.render(g2d, CELLSIZE);
+			}
 		}
 	}
 	
@@ -749,5 +754,20 @@ public class map {
 		System.out.println("\nnumber of actors in nodes: " + count);*/
 		
 	}
+	
+	public void burnInFences(){
+		Graphics2D g = (Graphics2D)BACKGROUND.getGraphics();
+		for (Actor a : actors)
+		{
+			if (a.getTYPE() == actorTYPE.FENCE)
+			{
+				a.render(g, CELLSIZE);
+			}
+		}
+		//System.out.println("burning in fences");
+		fences_burnt = true;
+		render();
+	}
+	
 	
 }

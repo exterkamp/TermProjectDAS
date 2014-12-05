@@ -265,7 +265,7 @@ public class Bunny implements Actor {
 			if (fox != null)
 			{
 				//seed the random decision by adding in all the chances
-				int total = fight+flight+((fight+flight)/2);
+				int total = fight+flight+(10-courage);
 				if (total == 0)
 					total = 1;
 				//fight and flight get their options 
@@ -293,7 +293,7 @@ public class Bunny implements Actor {
 					//RUN AWAY
 					//RUN AWAY AND DROP FOOD AND RUN HOME IF COURAGE IS LOW
 					//System.out.println("running away");
-					if (rand.nextDouble() < courage_confused_modifier)
+					if (rand.nextDouble() > courage_confused_modifier)
 					{
 						//courage is okay, run away
 						currentState = state.RUNNING_AWAY;

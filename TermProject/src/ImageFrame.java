@@ -425,6 +425,10 @@ private void addMenu()
 				 JButton src = (JButton)event.getSource();
 				 if (curStatus == status.INITIALIZED || curStatus == status.PAUSED )
 				 {
+					 if (curStatus == status.INITIALIZED)
+					 {
+						myMap.burnInFences(); 
+					 }
 					 if (myMap.difficulty_enabled)
 					 {
 						 src.setText("Pause");
@@ -438,6 +442,8 @@ private void addMenu()
 					 timer.stop();
 					 curStatus = status.PAUSED;
 				 }
+				 
+				 
 			 }
 		 }
 	});
